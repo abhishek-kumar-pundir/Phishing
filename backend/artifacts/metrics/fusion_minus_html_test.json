@@ -1,0 +1,53 @@
+{
+  "positive_label": "phishing",
+  "threshold": 0.5,
+  "n_samples": 2760,
+  "accuracy": 0.9518,
+  "precision": 0.9747,
+  "recall": 0.9183,
+  "f1": 0.9457,
+  "roc_auc": 0.9888,
+  "confusion_matrix": {
+    "labels": [
+      "negative",
+      "phishing"
+    ],
+    "matrix": [
+      [
+        1469,
+        30
+      ],
+      [
+        103,
+        1158
+      ]
+    ]
+  },
+  "classification_report": {
+    "negative": {
+      "precision": 0.9344783715012722,
+      "recall": 0.9799866577718479,
+      "f1-score": 0.9566916313904266,
+      "support": 1499.0
+    },
+    "phishing": {
+      "precision": 0.9747474747474747,
+      "recall": 0.9183187946074544,
+      "f1-score": 0.9456921192323398,
+      "support": 1261.0
+    },
+    "accuracy": 0.9518115942028985,
+    "macro avg": {
+      "precision": 0.9546129231243734,
+      "recall": 0.9491527261896511,
+      "f1-score": 0.9511918753113832,
+      "support": 2760.0
+    },
+    "weighted avg": {
+      "precision": 0.9528766828032509,
+      "recall": 0.9518115942028985,
+      "f1-score": 0.9516661296399385,
+      "support": 2760.0
+    }
+  }
+}

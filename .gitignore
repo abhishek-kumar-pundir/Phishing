@@ -1,0 +1,203 @@
+# ==============================================================================
+# Phish360 Master .gitignore
+# Production-ready for:
+#   - Frontend (React + Vite -> Vercel)
+#   - Backend (FastAPI + ML Models -> Render)
+#   - Browser Extension (Manifest V3 -> Chrome Web Store)
+# ==============================================================================
+
+# ==============================================================================
+# 1. Critical Exclusions: Massive Datasets & Intermediate Training Features
+# ==============================================================================
+# The raw Phish360 training dataset contains 10,700+ full HTML files & screenshots (>6.5 GB).
+# GitHub has a 100MB per-file hard limit and will reject huge repositories.
+**/datasets/
+datasets/
+**/datasets/**
+datasets/**
+
+# Intermediate feature extraction matrices (>70 MB, only needed during offline training)
+**/artifacts/features/
+artifacts/features/
+**/artifacts/features/**
+artifacts/features/**
+
+# Offline forensics CSV catalogs (large raw inspection logs)
+**/artifacts/dataset_inventory.csv
+**/artifacts/master_index.csv
+**/artifacts/phish360_manifest.csv
+
+# Keep essential runtime evaluation artifacts & model weights for Render:
+# (artifacts/metrics/*.json, artifacts/predictions/*.csv, and models/*.joblib are tracked)
+!**/artifacts/metrics/
+!**/artifacts/metrics/**
+!**/artifacts/predictions/
+!**/artifacts/predictions/**
+!**/models/*.joblib
+
+# ==============================================================================
+# 2. Runtime Databases & User Telemetry (Never commit production/scan data)
+# ==============================================================================
+# SQLite scan databases (created on demand at runtime by api/db.py)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+phish360_scans.db
+**/phish360_scans.db
+
+# Live screenshots captured during scans (keep folder structure via .gitkeep)
+**/artifacts/scan_screenshots/*
+artifacts/scan_screenshots/*
+!**/artifacts/scan_screenshots/.gitkeep
+!artifacts/scan_screenshots/.gitkeep
+
+# ==============================================================================
+# 3. Frontend & Vercel Deployment (frontend/)
+# ==============================================================================
+# Dependencies
+frontend/node_modules/
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+frontend/dist/
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+# Vercel deployment cache and artifacts
+.vercel/
+.turbo/
+
+# Vite temporary & accidental emissions
+frontend/vite.config.js
+frontend/vite.config.d.ts
+
+# Package manager debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Linter & formatter caches
+.eslintcache
+.stylelintcache
+
+# ==============================================================================
+# 4. Backend & Render Deployment (backend/)
+# ==============================================================================
+# Python virtual environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+.env/
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging artifacts
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Testing & quality tools
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+
+# ==============================================================================
+# 5. Chrome Extension & Web Store Publishing (extension/)
+# ==============================================================================
+# CRITICAL: Private signing key generated when packing an extension.
+# NEVER commit .pem keys to Git or your Web Store identity will be compromised!
+*.pem
+*.crx
+
+# Extension release archive zips (built for manual distribution or store upload)
+*.zip
+phish360-extension.zip
+**/phish360-extension.zip
+
+# Temporary extension build folders if added
+extension/dist/
+extension/build/
+
+# ==============================================================================
+# 6. Environment Variables & Secrets (CRITICAL SECURITY)
+# ==============================================================================
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# API keys and credentials
+credentials.json
+token.json
+secrets.json
+
+# ==============================================================================
+# 7. Operating System & IDE Files
+# ==============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# IDE & Editor caches
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

@@ -1,0 +1,938 @@
+{
+  "generated_at": "2026-09-05T19:40:43",
+  "dataset_root": "datasets\\phish360",
+  "totals": {
+    "samples_found": 10748,
+    "complete_samples": 10718,
+    "incomplete_samples": 30
+  },
+  "by_split": {
+    "test": 2771,
+    "trainval": 7977
+  },
+  "by_label": {
+    "legitimate": 6416,
+    "phish": 1272,
+    "santander": 57,
+    "sparkasse": 39,
+    "itau": 102,
+    "orange": 129,
+    "xfinity": 35,
+    "impots": 15,
+    "irs": 24,
+    "boa": 130,
+    "adobe": 82,
+    "dropbox": 82,
+    "chase": 182,
+    "office": 179,
+    "cibc": 34,
+    "bradesco": 40,
+    "alibaba": 107,
+    "facebook": 219,
+    "amazon": 77,
+    "yahoo": 101,
+    "google": 89,
+    "ebay": 23,
+    "aol": 26,
+    "att": 91,
+    "linkedin": 34,
+    "microsoft": 82,
+    "dhl": 115,
+    "paypal": 211,
+    "amex": 46,
+    "apple": 107,
+    "sfr": 39,
+    "navy": 13,
+    "match": 22,
+    "hsbc": 14,
+    "wellsfargo": 125,
+    "outlook": 93,
+    "netflix": 53,
+    "caixa": 21,
+    "tmobile": 22,
+    "mic": 19,
+    "usaa": 37,
+    "natwest": 26,
+    "bmo": 33,
+    "nab": 38,
+    "bt": 16,
+    "capitalone": 10,
+    "cox": 19,
+    "alllegro": 2
+  },
+  "by_split_and_label": {
+    "test": {
+      "legitimate": 1499,
+      "phish": 1272
+    },
+    "trainval": {
+      "legitimate": 4917,
+      "santander": 57,
+      "sparkasse": 39,
+      "itau": 102,
+      "orange": 129,
+      "xfinity": 35,
+      "impots": 15,
+      "irs": 24,
+      "boa": 130,
+      "adobe": 82,
+      "dropbox": 82,
+      "chase": 182,
+      "office": 179,
+      "cibc": 34,
+      "bradesco": 40,
+      "alibaba": 107,
+      "facebook": 219,
+      "amazon": 77,
+      "yahoo": 101,
+      "google": 89,
+      "ebay": 23,
+      "aol": 26,
+      "att": 91,
+      "linkedin": 34,
+      "microsoft": 82,
+      "dhl": 115,
+      "paypal": 211,
+      "amex": 46,
+      "apple": 107,
+      "sfr": 39,
+      "navy": 13,
+      "match": 22,
+      "hsbc": 14,
+      "wellsfargo": 125,
+      "outlook": 93,
+      "netflix": 53,
+      "caixa": 21,
+      "tmobile": 22,
+      "mic": 19,
+      "usaa": 37,
+      "natwest": 26,
+      "bmo": 33,
+      "nab": 38,
+      "bt": 16,
+      "capitalone": 10,
+      "cox": 19,
+      "alllegro": 2
+    }
+  },
+  "integrity_issues": {
+    "label_folder_vs_file_mismatches": 10627,
+    "zero_byte_html_files": 0,
+    "zero_byte_screenshots": 0,
+    "html_encoding_not_utf8": 0,
+    "corrupt_or_unreadable_screenshots": 18
+  },
+  "file_size_stats_bytes": {
+    "html": {
+      "count": 10718,
+      "min": 4003,
+      "max": 15590579,
+      "mean": 88552.2,
+      "median": 40370
+    },
+    "screenshot": {
+      "count": 10748,
+      "min": 10457,
+      "max": 16107041,
+      "mean": 555240.9,
+      "median": 365338
+    },
+    "url": {
+      "count": 10748,
+      "min": 18,
+      "max": 1646,
+      "mean": 61.1,
+      "median": 48
+    }
+  },
+  "duplicate_groups": {
+    "html_duplicate_groups": 136,
+    "html_cross_split_leaks": 11,
+    "screenshot_duplicate_groups": 8,
+    "screenshot_cross_split_leaks": 3,
+    "url_duplicate_groups": 103,
+    "url_cross_split_leaks": 14
+  },
+  "duplicate_group_details": {
+    "html_top_20": [
+      {
+        "hash": "b228acf9b311fe3f07c51095af6a370c",
+        "count": 9,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01284_phish",
+          "test/P01847_phish",
+          "test/P02079_phish",
+          "trainval/P14020_att",
+          "trainval/P14435_apple",
+          "trainval/P17807_paypal",
+          "trainval/P18630_adobe",
+          "trainval/P19329_microsoft",
+          "trainval/P19959_cox"
+        ]
+      },
+      {
+        "hash": "3c82f6df5691e797afec136e10ff3900",
+        "count": 3,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01216_phish",
+          "trainval/P19368_alibaba",
+          "trainval/P19761_alibaba"
+        ]
+      },
+      {
+        "hash": "170bfc77f3052c61032ec27b0c372484",
+        "count": 3,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01287_phish",
+          "trainval/P12012_paypal",
+          "trainval/P12020_google"
+        ]
+      },
+      {
+        "hash": "3356ace56382f5e8d17cb2aaf0e3a355",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/L00383_legitimate",
+          "trainval/L01564_legitimate"
+        ]
+      },
+      {
+        "hash": "6cc57974e757383ce104d0bcef09091b",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01174_phish",
+          "trainval/P11155_google"
+        ]
+      },
+      {
+        "hash": "88362239981b9635abd799bdaba0a4b8",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01258_phish",
+          "trainval/P12086_boa"
+        ]
+      },
+      {
+        "hash": "9ee6e7c51da9591db09e4324c070a73b",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01302_phish",
+          "trainval/P19436_xfinity"
+        ]
+      },
+      {
+        "hash": "681fc7f23046e41387e53532fa07f8d7",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01371_phish",
+          "trainval/P17206_cibc"
+        ]
+      },
+      {
+        "hash": "749e6ecc7959320d76b9efc4e109f41a",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01482_phish",
+          "trainval/P10250_office"
+        ]
+      },
+      {
+        "hash": "cc240b3c51201774a3c87ca5c32964ba",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01495_phish",
+          "trainval/P12049_chase"
+        ]
+      },
+      {
+        "hash": "35f63a1b775d369da15d8e71d3409ed3",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P02169_phish",
+          "trainval/P15106_cibc"
+        ]
+      },
+      {
+        "hash": "aa405c3cdfe5fb8e77eb19204fa5635b",
+        "count": 7,
+        "splits_involved": [
+          "trainval"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "trainval/P10005_orange",
+          "trainval/P12339_chase",
+          "trainval/P12897_dhl",
+          "trainval/P13602_att",
+          "trainval/P14584_amex",
+          "trainval/P18108_dhl",
+          "trainval/P19565_linkedin"
+        ]
+      },
+      {
+        "hash": "ddf70b5e1b2fbedd01a9874aacc120d9",
+        "count": 5,
+        "splits_involved": [
+          "trainval"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "trainval/P14018_yahoo",
+          "trainval/P14256_yahoo",
+          "trainval/P15558_yahoo",
+          "trainval/P15856_yahoo",
+          "trainval/P19894_yahoo"
+        ]
+      },
+      {
+        "hash": "6e789782f95d3320263976e28d73d6fb",
+        "count": 4,
+        "splits_involved": [
+          "trainval"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "trainval/P16297_nab",
+          "trainval/P16436_nab",
+          "trainval/P16992_nab",
+          "trainval/P19020_nab"
+        ]
+      },
+      {
+        "hash": "dc5f6132a66e0ab676124ae3dff79336",
+        "count": 3,
+        "splits_involved": [
+          "test"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "test/L00817_legitimate",
+          "test/L01155_legitimate",
+          "test/L01499_legitimate"
+        ]
+      },
+      {
+        "hash": "820d5a902afafc51a0e68bc05f12e695",
+        "count": 3,
+        "splits_involved": [
+          "test"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "test/P01099_phish",
+          "test/P01272_phish",
+          "test/P01890_phish"
+        ]
+      },
+      {
+        "hash": "9b79459ca28073a6f2e381f7ab1e4776",
+        "count": 3,
+        "splits_involved": [
+          "trainval"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "trainval/P10024_office",
+          "trainval/P10033_office",
+          "trainval/P10216_office"
+        ]
+      },
+      {
+        "hash": "547bc3c34218fc6fd33bba75f1390247",
+        "count": 3,
+        "splits_involved": [
+          "trainval"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "trainval/P10111_office",
+          "trainval/P10302_office",
+          "trainval/P11920_office"
+        ]
+      },
+      {
+        "hash": "b6dd641b347bf36752b50f1eafe61429",
+        "count": 3,
+        "splits_involved": [
+          "trainval"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "trainval/P12650_santander",
+          "trainval/P12659_itau",
+          "trainval/P12663_facebook"
+        ]
+      },
+      {
+        "hash": "9076e73d06c9a0d601e8a0d1ed7e3d91",
+        "count": 3,
+        "splits_involved": [
+          "trainval"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "trainval/P13109_nab",
+          "trainval/P13128_nab",
+          "trainval/P13387_nab"
+        ]
+      }
+    ],
+    "screenshot_top_20": [
+      {
+        "hash": "f40c6f60040cae5b0a024360acb5e354",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/L00383_legitimate",
+          "trainval/L01564_legitimate"
+        ]
+      },
+      {
+        "hash": "78ab74da41ff21ce1984c2dbbba6a985",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01174_phish",
+          "trainval/P11155_google"
+        ]
+      },
+      {
+        "hash": "8c803c5aef10fffcb86ea871bda75f48",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01216_phish",
+          "trainval/P19368_alibaba"
+        ]
+      },
+      {
+        "hash": "15390c287c18067bb85d62a6136c7d73",
+        "count": 2,
+        "splits_involved": [
+          "test"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "test/L00044_legitimate",
+          "test/L01145_legitimate"
+        ]
+      },
+      {
+        "hash": "18fc46ffe6c30d891910f0625fe9716c",
+        "count": 2,
+        "splits_involved": [
+          "test"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "test/L00343_legitimate",
+          "test/L01043_legitimate"
+        ]
+      },
+      {
+        "hash": "83d174f0bfc27b941ec82c2134388838",
+        "count": 2,
+        "splits_involved": [
+          "test"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "test/L00766_legitimate",
+          "test/L01335_legitimate"
+        ]
+      },
+      {
+        "hash": "2b99c6fdffaac7424d59ac18ce486916",
+        "count": 2,
+        "splits_involved": [
+          "test"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "test/L00802_legitimate",
+          "test/L01436_legitimate"
+        ]
+      },
+      {
+        "hash": "cf40fd58155e0139a3b9b5ef56473673",
+        "count": 2,
+        "splits_involved": [
+          "test"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "test/L00932_legitimate",
+          "test/L01308_legitimate"
+        ]
+      }
+    ],
+    "url_top_20": [
+      {
+        "hash": "8d82360dae6a254605e1f1655e6c911e",
+        "count": 3,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01216_phish",
+          "trainval/P19368_alibaba",
+          "trainval/P19761_alibaba"
+        ]
+      },
+      {
+        "hash": "7ad70afc0b9d5d4c316c350bf5ff64d1",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/L00213_legitimate",
+          "trainval/L01776_legitimate"
+        ]
+      },
+      {
+        "hash": "d2fed014b7828c99b895410c89ba3757",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/L00278_legitimate",
+          "trainval/L01751_legitimate"
+        ]
+      },
+      {
+        "hash": "caaba4071009eefa391441d319d90dcb",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/L00313_legitimate",
+          "trainval/L01710_legitimate"
+        ]
+      },
+      {
+        "hash": "baac858af457fd2ff086de6d85f91b1f",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/L00383_legitimate",
+          "trainval/L01564_legitimate"
+        ]
+      },
+      {
+        "hash": "f1d0e67bb43b52c3bed16bf102ac364f",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/L00466_legitimate",
+          "trainval/L05909_legitimate"
+        ]
+      },
+      {
+        "hash": "2a647b166649a25c74af3db7ebd9d9ce",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/L00629_legitimate",
+          "trainval/L01742_legitimate"
+        ]
+      },
+      {
+        "hash": "f8fd8bbd901a07acc1f821786284a3e3",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/L00679_legitimate",
+          "trainval/L01632_legitimate"
+        ]
+      },
+      {
+        "hash": "b8ecf194c56cfb743ba57ecc4ed44c08",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/L00897_legitimate",
+          "trainval/L01652_legitimate"
+        ]
+      },
+      {
+        "hash": "496a2b4cf7917e7af3ece03601504705",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/L00989_legitimate",
+          "trainval/L01683_legitimate"
+        ]
+      },
+      {
+        "hash": "51d58acd610096ad3cb38ecc8e3edb5b",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01174_phish",
+          "trainval/P11155_google"
+        ]
+      },
+      {
+        "hash": "dabf05852be19fde2d6191048e17bd0f",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P01482_phish",
+          "trainval/P10250_office"
+        ]
+      },
+      {
+        "hash": "06692ee3b57df0441e86bf31a99c0177",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P02477_phish",
+          "trainval/P14866_paypal"
+        ]
+      },
+      {
+        "hash": "cb4b9d85924d2e13476101914d2244ae",
+        "count": 2,
+        "splits_involved": [
+          "test",
+          "trainval"
+        ],
+        "cross_split_leak": true,
+        "sample_ids": [
+          "test/P02525_phish",
+          "trainval/P10296_bradesco"
+        ]
+      },
+      {
+        "hash": "eba918d0d71208b1e6a7856aa2825b0d",
+        "count": 5,
+        "splits_involved": [
+          "trainval"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "trainval/P14018_yahoo",
+          "trainval/P14256_yahoo",
+          "trainval/P15558_yahoo",
+          "trainval/P15856_yahoo",
+          "trainval/P19894_yahoo"
+        ]
+      },
+      {
+        "hash": "1e499b71bdcb4ebe216ce32306615101",
+        "count": 5,
+        "splits_involved": [
+          "trainval"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "trainval/P16117_wellsfargo",
+          "trainval/P16119_wellsfargo",
+          "trainval/P16145_wellsfargo",
+          "trainval/P16561_wellsfargo",
+          "trainval/P16582_wellsfargo"
+        ]
+      },
+      {
+        "hash": "f87712726c6233d83a62cb751c112066",
+        "count": 4,
+        "splits_involved": [
+          "trainval"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "trainval/P10119_sfr",
+          "trainval/P10187_sfr",
+          "trainval/P10358_sfr",
+          "trainval/P11932_sfr"
+        ]
+      },
+      {
+        "hash": "03a21aaf48b2368808a32026dbcf0a2a",
+        "count": 3,
+        "splits_involved": [
+          "trainval"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "trainval/P16299_google",
+          "trainval/P16434_google",
+          "trainval/P16604_google"
+        ]
+      },
+      {
+        "hash": "77c3145f676f7bc54d38922989f24d3f",
+        "count": 2,
+        "splits_involved": [
+          "test"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "test/L00008_legitimate",
+          "test/L00579_legitimate"
+        ]
+      },
+      {
+        "hash": "fce2e1df1ef601241e4e0cc3b38539e6",
+        "count": 2,
+        "splits_involved": [
+          "test"
+        ],
+        "cross_split_leak": false,
+        "sample_ids": [
+          "test/L00044_legitimate",
+          "test/L01145_legitimate"
+        ]
+      }
+    ]
+  },
+  "incomplete_sample_ids": [
+    "test/P01162_phish",
+    "test/P01317_phish",
+    "test/P01509_phish",
+    "test/P01712_phish",
+    "test/P01768_phish",
+    "test/P01928_phish",
+    "test/P02108_phish",
+    "test/P02323_phish",
+    "test/P02377_phish",
+    "test/P02512_phish",
+    "test/P02516_phish",
+    "trainval/P10014_irs",
+    "trainval/P10194_dhl",
+    "trainval/P10333_microsoft",
+    "trainval/P11165_dhl",
+    "trainval/P11270_outlook",
+    "trainval/P11534_microsoft",
+    "trainval/P11875_microsoft",
+    "trainval/P11911_boa",
+    "trainval/P12312_outlook",
+    "trainval/P12746_dhl",
+    "trainval/P12807_dhl",
+    "trainval/P15416_outlook",
+    "trainval/P16015_outlook",
+    "trainval/P16215_office",
+    "trainval/P16318_dhl",
+    "trainval/P16713_yahoo",
+    "trainval/P17247_yahoo",
+    "trainval/P18953_office",
+    "trainval/P19936_dhl"
+  ],
+  "label_mismatch_sample_ids": [
+    "test/L00001_legitimate",
+    "test/L00003_legitimate",
+    "test/L00004_legitimate",
+    "test/L00005_legitimate",
+    "test/L00006_legitimate",
+    "test/L00008_legitimate",
+    "test/L00010_legitimate",
+    "test/L00011_legitimate",
+    "test/L00012_legitimate",
+    "test/L00013_legitimate",
+    "test/L00014_legitimate",
+    "test/L00015_legitimate",
+    "test/L00016_legitimate",
+    "test/L00017_legitimate",
+    "test/L00018_legitimate",
+    "test/L00019_legitimate",
+    "test/L00020_legitimate",
+    "test/L00021_legitimate",
+    "test/L00023_legitimate",
+    "test/L00024_legitimate",
+    "test/L00025_legitimate",
+    "test/L00026_legitimate",
+    "test/L00027_legitimate",
+    "test/L00028_legitimate",
+    "test/L00029_legitimate",
+    "test/L00030_legitimate",
+    "test/L00031_legitimate",
+    "test/L00032_legitimate",
+    "test/L00033_legitimate",
+    "test/L00034_legitimate",
+    "test/L00035_legitimate",
+    "test/L00036_legitimate",
+    "test/L00039_legitimate",
+    "test/L00041_legitimate",
+    "test/L00042_legitimate",
+    "test/L00043_legitimate",
+    "test/L00044_legitimate",
+    "test/L00046_legitimate",
+    "test/L00047_legitimate",
+    "test/L00048_legitimate",
+    "test/L00049_legitimate",
+    "test/L00050_legitimate",
+    "test/L00051_legitimate",
+    "test/L00052_legitimate",
+    "test/L00053_legitimate",
+    "test/L00054_legitimate",
+    "test/L00055_legitimate",
+    "test/L00056_legitimate",
+    "test/L00057_legitimate",
+    "test/L00058_legitimate",
+    "test/L00059_legitimate",
+    "test/L00060_legitimate",
+    "test/L00061_legitimate",
+    "test/L00062_legitimate",
+    "test/L00063_legitimate",
+    "test/L00064_legitimate",
+    "test/L00065_legitimate",
+    "test/L00066_legitimate",
+    "test/L00067_legitimate",
+    "test/L00068_legitimate",
+    "test/L00069_legitimate",
+    "test/L00070_legitimate",
+    "test/L00071_legitimate",
+    "test/L00072_legitimate",
+    "test/L00073_legitimate",
+    "test/L00074_legitimate",
+    "test/L00075_legitimate",
+    "test/L00076_legitimate",
+    "test/L00077_legitimate",
+    "test/L00078_legitimate",
+    "test/L00079_legitimate",
+    "test/L00080_legitimate",
+    "test/L00081_legitimate",
+    "test/L00082_legitimate",
+    "test/L00083_legitimate",
+    "test/L00084_legitimate",
+    "test/L00085_legitimate",
+    "test/L00086_legitimate",
+    "test/L00087_legitimate",
+    "test/L00088_legitimate",
+    "test/L00089_legitimate",
+    "test/L00090_legitimate",
+    "test/L00091_legitimate",
+    "test/L00092_legitimate",
+    "test/L00093_legitimate",
+    "test/L00094_legitimate",
+    "test/L00095_legitimate",
+    "test/L00096_legitimate",
+    "test/L00097_legitimate",
+    "test/L00098_legitimate",
+    "test/L00100_legitimate",
+    "test/L00101_legitimate",
+    "test/L00102_legitimate",
+    "test/L00103_legitimate",
+    "test/L00104_legitimate",
+    "test/L00105_legitimate",
+    "test/L00106_legitimate",
+    "test/L00107_legitimate",
+    "test/L00108_legitimate",
+    "test/L00109_legitimate"
+  ],
+  "processing_errors": []
+}

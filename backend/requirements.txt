@@ -1,0 +1,19 @@
+# Core
+numpy
+pandas
+scikit-learn
+joblib
+Pillow
+beautifulsoup4
+lxml
+
+# API
+fastapi
+uvicorn[standard]
+python-multipart
+httpx
+
+# Optional but strongly recommended for real vision features
+# (without these, features_vision.py falls back to weak histogram features):
+# torch --index-url https://download.pytorch.org/whl/cpu
+# torchvision --index-url https://download.pytorch.org/whl/cpu
