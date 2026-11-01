@@ -4,29 +4,36 @@ function isRow(v: ClassificationReportRow | number): v is ClassificationReportRo
   return typeof v === "object";
 }
 
-export function ClassificationReportView({ report }: { report: Record<string, ClassificationReportRow | number> }) {
-  const rows = Object.entries(report).filter(([, v]) => isRow(v)) as [string, ClassificationReportRow][];
+export function ClassificationReportView({
+  report,
+}: {
+  report: Record<string, ClassificationReportRow | number>;
+}) {
+  const rows = Object.entries(report).filter(([, v]) => isRow(v)) as [
+    string,
+    ClassificationReportRow
+  ][];
 
   return (
-    <div className="min-w-0 overflow-x-auto rounded-lg border border-white/[0.06]">
-      <table className="w-full min-w-[420px] text-left text-xs">
+    <div className="min-w-0 overflow-x-auto rounded border border-surface-border font-mono text-xs">
+      <table className="w-full min-w-[420px] text-left">
         <thead>
-          <tr className="border-b border-white/[0.06] text-[10px] uppercase tracking-wide text-mist-500">
-            <th className="px-3 py-2 font-medium">Class</th>
-            <th className="px-3 py-2 text-right font-medium">Precision</th>
-            <th className="px-3 py-2 text-right font-medium">Recall</th>
-            <th className="px-3 py-2 text-right font-medium">F1</th>
-            <th className="px-3 py-2 text-right font-medium">Support</th>
+          <tr className="border-b border-surface-border bg-surface-subtle text-[10px] uppercase tracking-wider text-mist-500">
+            <th className="px-3 py-2 font-semibold">Class Target</th>
+            <th className="px-3 py-2 text-right font-semibold">Precision</th>
+            <th className="px-3 py-2 text-right font-semibold">Recall</th>
+            <th className="px-3 py-2 text-right font-semibold">F1 Score</th>
+            <th className="px-3 py-2 text-right font-semibold">Support</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-surface-border/50 text-[11px]">
           {rows.map(([label, r]) => (
-            <tr key={label} className="border-b border-white/[0.04] last:border-b-0">
-              <td className="min-w-0 truncate px-3 py-1.5 capitalize text-mist-300">{label}</td>
-              <td className="tabular px-3 py-1.5 text-right text-mist-100">{r.precision.toFixed(3)}</td>
-              <td className="tabular px-3 py-1.5 text-right text-mist-100">{r.recall.toFixed(3)}</td>
-              <td className="tabular px-3 py-1.5 text-right text-mist-100">{r["f1-score"].toFixed(3)}</td>
-              <td className="tabular px-3 py-1.5 text-right text-mist-500">{r.support}</td>
+            <tr key={label} className="hover:bg-surface-subtle/30">
+              <td className="min-w-0 truncate px-3 py-2 text-mist-200 uppercase">{label}</td>
+              <td className="tabular px-3 py-2 text-right text-mist-300">{r.precision.toFixed(3)}</td>
+              <td className="tabular px-3 py-2 text-right text-mist-300">{r.recall.toFixed(3)}</td>
+              <td className="tabular px-3 py-2 text-right text-mist-100 font-semibold">{r["f1-score"].toFixed(3)}</td>
+              <td className="tabular px-3 py-2 text-right text-mist-500">{r.support}</td>
             </tr>
           ))}
         </tbody>

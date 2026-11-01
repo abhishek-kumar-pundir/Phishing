@@ -54,10 +54,7 @@ export function DockedInspector({ result, selectedModality, onSelectModality }: 
               />
               <span className="font-mono">{cfg.label}</span>
               {score != null ? (
-                <span
-                  className="font-mono text-[10px] tabular px-1.5 py-0.5 rounded border border-surface-border"
-                  style={{ color: TONE_HEX[tone] }}
-                >
+                <span className="font-mono text-[10px] tabular px-1.5 py-0.5 rounded border border-surface-border text-mist-300">
                   {pct(score, 0)}
                 </span>
               ) : (
@@ -73,7 +70,7 @@ export function DockedInspector({ result, selectedModality, onSelectModality }: 
       {/* Modality Inspector Header */}
       <div className="p-4 border-b border-surface-border flex items-center justify-between gap-4 bg-surface-subtle/20">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: TONE_HEX[scoreTone] }} />
+          <div className="w-1.5 h-1.5 rounded-full bg-brand" />
           <div>
             <h3 className="font-mono text-xs font-semibold tracking-wider text-mist-100 uppercase">
               {MODALITY_CONFIG[selectedModality].label} FORENSIC INSPECTOR
@@ -90,10 +87,7 @@ export function DockedInspector({ result, selectedModality, onSelectModality }: 
 
         {currentScore != null && (
           <div className="text-right">
-            <span
-              className="font-mono text-xl font-bold tabular"
-              style={{ color: TONE_HEX[scoreTone] }}
-            >
+            <span className="font-mono text-xl font-bold tabular text-mist-100">
               {pct(currentScore, 1)}
             </span>
             <span className="block text-[10px] font-mono text-mist-500 uppercase">Risk score</span>

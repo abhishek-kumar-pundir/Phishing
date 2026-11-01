@@ -1,4 +1,3 @@
-import React from "react";
 import { Modality } from "../../api/phish360";
 import { UnifiedScanResult } from "../../lib/scanResult";
 import { pct, riskTone } from "../../lib/format";
@@ -30,7 +29,6 @@ const CORE_Y = 140;
 
 export function FusionDiagram({
   result,
-  animate = false,
   selectedModality = "url",
   onSelectModality,
 }: Props) {
@@ -54,14 +52,13 @@ export function FusionDiagram({
         role="img"
         aria-label="Fusion Pipeline Diagram"
       >
-        {/* Converging Weighted Edges */}
+        {/* Converging Weighted Edges (monolithic neutral with accent on selected) */}
         {MODALITY_NODES.map((node) => {
           const score = result.scores[node.key];
-          const tone = riskTone(score);
-          const edgeColor = score != null ? TONE_HEX[tone] : "#20242D";
+          const isSelected = selectedModality === node.key;
+          const edgeColor = isSelected ? "#38C0E4" : score != null ? "#2E3544" : "#1A1E27";
           const normalizedWeight = node.weight / TOTAL_WEIGHT;
           const strokeWidth = 1.5 + normalizedWeight * 6; // 1.5px to 4px
-          const isSelected = selectedModality === node.key;
 
           // Smooth Bezier path from node center to central core
           const path = `M ${node.x} ${node.y} Q ${(node.x + CORE_X) / 2} ${CORE_Y} ${CORE_X} ${CORE_Y}`;
@@ -71,7 +68,7 @@ export function FusionDiagram({
               <path
                 d={path}
                 fill="none"
-                stroke={isSelected ? "#38C0E4" : edgeColor}
+                stroke={edgeColor}
                 strokeWidth={strokeWidth}
                 strokeOpacity={score != null ? 0.75 : 0.3}
                 strokeLinecap="round"
@@ -80,7 +77,7 @@ export function FusionDiagram({
           );
         })}
 
-        {/* Central Fusion Core */}
+        {/* Central Fusion Core (resolves to verdict only upon fusion) */}
         <g transform={`translate(${CORE_X}, ${CORE_Y})`}>
           {/* Core Outer Ring */}
           <circle
@@ -129,8 +126,6 @@ export function FusionDiagram({
         {MODALITY_NODES.map((node) => {
           const score = result.scores[node.key];
           const skipReason = result.skipReasons[node.key];
-          const tone = riskTone(score);
-          const color = score != null ? TONE_HEX[tone] : "#20242D";
           const isSelected = selectedModality === node.key;
 
           return (
@@ -144,16 +139,16 @@ export function FusionDiagram({
               <circle
                 r={26}
                 fill="#121419"
-                stroke={isSelected ? "#38C0E4" : color}
+                stroke={isSelected ? "#38C0E4" : "#242A36"}
                 strokeWidth={isSelected ? 2 : 1.5}
               />
 
-              {/* Radial Probability Arc (if scored) */}
+              {/* Radial Probability Arc (singular accent #38C0E4) */}
               {score != null && (
                 <circle
                   r={29}
                   fill="none"
-                  stroke={color}
+                  stroke="#38C0E4"
                   strokeWidth={2}
                   strokeDasharray={`${score * 182} 182`}
                   strokeLinecap="round"
@@ -176,7 +171,7 @@ export function FusionDiagram({
               <text
                 y={12}
                 textAnchor="middle"
-                fill={score != null ? color : "#64748B"}
+                fill={score != null ? "#E2E8F0" : "#64748B"}
                 fontSize="11"
                 fontFamily="Geist Mono, monospace"
                 fontWeight="bold"

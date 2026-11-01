@@ -3,33 +3,37 @@ import { ConfusionMatrix } from "../../api/phish360";
 export function ConfusionMatrixView({ cm }: { cm: ConfusionMatrix }) {
   const [negLabel, posLabel] = cm.labels;
   const [[tn, fp], [fn, tp]] = cm.matrix;
-  const max = Math.max(tn, fp, fn, tp) || 1;
 
   const cell = (value: number, correct: boolean) => {
-    const intensity = 0.12 + 0.55 * (value / max);
     return (
       <div
-        className="flex min-w-0 flex-col items-center justify-center rounded-lg border px-3 py-4"
-        style={{
-          borderColor: correct ? `rgba(43,182,115,${0.25 + intensity * 0.4})` : `rgba(226,102,28,${0.25 + intensity * 0.4})`,
-          backgroundColor: correct ? `rgba(43,182,115,${intensity * 0.25})` : `rgba(226,102,28,${intensity * 0.25})`,
-        }}
+        className={`flex min-w-0 flex-col items-center justify-center rounded border px-3 py-3 font-mono ${
+          correct
+            ? "border-verdict-legit/30 bg-verdict-legit/10 text-mist-100"
+            : value > 0
+            ? "border-verdict-phish/30 bg-verdict-phish/10 text-verdict-phish"
+            : "border-surface-border bg-surface-subtle text-mist-500"
+        }`}
       >
-        <span className="tabular font-display text-xl font-semibold text-mist-100">{value}</span>
+        <span className="tabular text-lg font-semibold">{value}</span>
       </div>
     );
   };
 
   return (
-    <div className="min-w-0">
-      <div className="grid grid-cols-[auto_1fr_1fr] gap-1.5 text-[11px] text-mist-500">
+    <div className="min-w-0 font-mono text-[10px]">
+      <div className="grid grid-cols-[auto_1fr_1fr] gap-1.5 text-mist-500">
         <div />
-        <div className="truncate text-center">predicted {negLabel}</div>
-        <div className="truncate text-center">predicted {posLabel}</div>
-        <div className="flex items-center justify-end pr-1 text-right">actual {negLabel}</div>
+        <div className="truncate text-center uppercase tracking-wider py-1">pred {negLabel}</div>
+        <div className="truncate text-center uppercase tracking-wider py-1">pred {posLabel}</div>
+        <div className="flex items-center justify-end pr-2 text-right uppercase tracking-wider">
+          act {negLabel}
+        </div>
         {cell(tn, true)}
         {cell(fp, false)}
-        <div className="flex items-center justify-end pr-1 text-right">actual {posLabel}</div>
+        <div className="flex items-center justify-end pr-2 text-right uppercase tracking-wider">
+          act {posLabel}
+        </div>
         {cell(fn, false)}
         {cell(tp, true)}
       </div>

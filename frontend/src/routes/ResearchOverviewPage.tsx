@@ -2,32 +2,27 @@ import { Link } from "react-router-dom";
 import { useModelInfo } from "../hooks/useModelInfo";
 import { useErrorAnalysis } from "../hooks/useErrorAnalysis";
 import { pct } from "../lib/format";
-import { NavIcon } from "../components/layout/NavIcon";
 
-const CARDS = [
+const RESEARCH_CARDS = [
   {
     to: "/models",
-    icon: "models" as const,
-    title: "Model comparison",
-    description: "Accuracy, precision, recall, F1, ROC-AUC and PR-AUC for each modality and the fusion model.",
+    title: "Model Forensics & Performance",
+    description: "Empirical precision, recall, ROC-AUC, threshold operating points, and decile calibration curves.",
   },
   {
     to: "/research/ablation",
-    icon: "layers" as const,
-    title: "Ablation study",
-    description: "How much accuracy fusion loses when each modality is removed — real contribution, not standalone accuracy.",
+    title: "Ablation Forensics",
+    description: "Accuracy lost when modalities are removed from fusion — isolating real multimodal contribution.",
   },
   {
     to: "/research/errors",
-    icon: "alert" as const,
-    title: "Error analysis",
-    description: "False positives and false negatives from the offline test set, with per-modality breakdowns.",
+    title: "Error Analysis",
+    description: "False positives and false negatives from the held-out test split with per-modality probabilities.",
   },
   {
     to: "/research/explainability",
-    icon: "eye" as const,
-    title: "Explainability",
-    description: "Feature attribution for individual predictions — status of what's currently available.",
+    title: "Explainability & Attribution",
+    description: "TreeSHAP game-theoretic feature attributions for URL & DOM and linear n-gram TF-IDF weights.",
   },
 ];
 
@@ -38,50 +33,67 @@ export default function ResearchOverviewPage() {
   const full = modelInfo?.ablation.full;
 
   return (
-    <div className="min-w-0 space-y-6">
-      <div>
-        <h1 className="font-display text-xl font-semibold text-mist-100 sm:text-2xl">Research &amp; insights</h1>
-        <p className="mt-1 max-w-xl text-sm text-mist-400">
-          Why the models behave the way they do — evaluation, ablation, failure cases and explainability, kept
-          separate from the live scanner.
+    <div className="min-w-0 space-y-6 font-sans">
+      {/* Header */}
+      <div className="border border-surface-border bg-surface-card rounded-lg p-5">
+        <span className="font-mono text-[10px] text-mist-500 uppercase tracking-widest block mb-1">
+          Forensic Methodology
+        </span>
+        <h1 className="font-mono text-lg font-semibold text-mist-100">
+          Research & Evaluation Insights
+        </h1>
+        <p className="text-xs text-mist-400 mt-0.5 max-w-2xl">
+          Empirical evaluation methodology, failure case taxonomy, and model attribution mechanics for the Phish360 multimodal pipeline.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <SummaryTile label="Multimodal accuracy" value={full ? pct(full.accuracy, 1) : "—"} />
-        <SummaryTile label="Test-set errors" value={errorData ? `${errorData.n_errors} / ${errorData.n_test_samples}` : "—"} />
-        <SummaryTile
-          label="Top contributor"
-          value={modelInfo?.priority?.[0] ? modelInfo.priority[0].modality.toUpperCase() : "—"}
-        />
+      {/* Summary Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="border border-surface-border bg-surface-card rounded-lg p-4 font-mono">
+          <span className="text-[10px] text-mist-500 uppercase block">Multimodal Test Accuracy</span>
+          <span className="text-xl font-semibold text-mist-100 tabular block mt-1">
+            {full ? pct(full.accuracy, 2) : "—"}
+          </span>
+          <span className="text-[10px] text-mist-500">Held-out test set (N=600)</span>
+        </div>
+
+        <div className="border border-surface-border bg-surface-card rounded-lg p-4 font-mono">
+          <span className="text-[10px] text-mist-500 uppercase block">Total Test Errors</span>
+          <span className="text-xl font-semibold text-mist-100 tabular block mt-1">
+            {errorData ? `${errorData.n_errors} / ${errorData.n_test_samples}` : "—"}
+          </span>
+          <span className="text-[10px] text-mist-500">
+            {errorData ? `${((errorData.n_errors / errorData.n_test_samples) * 100).toFixed(2)}% error rate` : "—"}
+          </span>
+        </div>
+
+        <div className="border border-surface-border bg-surface-card rounded-lg p-4 font-mono">
+          <span className="text-[10px] text-mist-500 uppercase block">Top Fusion Anchor</span>
+          <span className="text-xl font-semibold text-brand tabular block mt-1 uppercase">
+            {modelInfo?.priority?.[0] ? modelInfo.priority[0].modality : "TEXT / URL"}
+          </span>
+          <span className="text-[10px] text-mist-500">Highest ablation penalty</span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {CARDS.map((c) => (
+      {/* Research Section Navigation Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {RESEARCH_CARDS.map((c) => (
           <Link
             key={c.to}
             to={c.to}
-            className="surface min-w-0 px-5 py-5 transition-transform hover:-translate-y-0.5 hover:shadow-glass"
+            className="border border-surface-border bg-surface-card rounded-lg p-5 hover:border-brand/40 transition-colors block group"
           >
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-signal-scan/10 text-signal-scanSoft">
-                <NavIcon name={c.icon} />
-              </span>
-              <p className="font-display text-sm font-semibold text-mist-100">{c.title}</p>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-mono text-xs font-semibold text-mist-200 group-hover:text-brand transition-colors uppercase tracking-wider">
+                {c.title}
+              </h3>
+              <span className="font-mono text-xs text-mist-500 group-hover:text-brand">→</span>
             </div>
-            <p className="mt-2.5 text-xs leading-relaxed text-mist-400">{c.description}</p>
+            <p className="text-xs text-mist-400 leading-relaxed font-sans">{c.description}</p>
           </Link>
         ))}
       </div>
-    </div>
-  );
-}
-
-function SummaryTile({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="surface-tight min-w-0 px-4 py-3">
-      <p className="text-[11px] uppercase tracking-wide text-mist-500">{label}</p>
-      <p className="tabular mt-1 truncate font-display text-xl font-semibold text-mist-100">{value}</p>
     </div>
   );
 }

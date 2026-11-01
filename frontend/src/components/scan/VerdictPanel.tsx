@@ -128,10 +128,9 @@ export function VerdictPanel({ result }: Props) {
                 <div className="h-1.5 w-full bg-surface-subtle rounded-full overflow-hidden flex">
                   {score != null ? (
                     <div
-                      className="h-full rounded-full transition-all duration-500"
+                      className="h-full rounded-full bg-brand/80 transition-all duration-500"
                       style={{
                         width: `${Math.min(100, Math.max(2, score * 100))}%`,
-                        backgroundColor: TONE_HEX[scoreTone],
                       }}
                     />
                   ) : (
@@ -146,3 +145,4 @@ export function VerdictPanel({ result }: Props) {
     </motion.div>
   );
 }
+

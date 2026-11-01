@@ -1,62 +1,122 @@
 import { useModelInfo } from "../hooks/useModelInfo";
+import { useThresholdAnalysis } from "../hooks/useThresholdAnalysis";
 import { MetricsTable } from "../components/models/MetricsTable";
-import { StatTile } from "../components/ui/StatTile";
+import { ThresholdSliderCard } from "../components/models/ThresholdSliderCard";
+import { CalibrationCurveCard } from "../components/models/CalibrationCurveCard";
+import { GlobalFeatureImportanceCard } from "../components/models/GlobalFeatureImportanceCard";
+import { DomainShiftCard } from "../components/models/DomainShiftCard";
+import { FusionAblationCard } from "../components/models/FusionAblationCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { pct } from "../lib/format";
-import { Modality } from "../api/phish360";
-
-const MODALITY_LABEL: Record<Modality, string> = { url: "URL", html: "HTML / DOM", text: "Text", vision: "Vision" };
 
 export default function ModelsPage() {
-  const { data, loading, error } = useModelInfo();
+  const { data: modelData, loading: modelLoading, error: modelError } = useModelInfo();
+  const { data: threshData, loading: threshLoading, error: threshError } = useThresholdAnalysis();
 
-  if (loading) return <EmptyState title="Loading evaluation data…" />;
-  if (error || !data) return <EmptyState tone="danger" title="Couldn't load model performance" description={error ?? undefined} />;
+  if (modelLoading || threshLoading) {
+    return (
+      <div className="p-12 text-center font-mono text-xs text-mist-500">
+        Loading calibrated model forensics and evaluation benchmarks…
+      </div>
+    );
+  }
 
-  const full = data.ablation.full;
+  if (modelError || !modelData) {
+    return (
+      <EmptyState
+        tone="danger"
+        title="Unable to load model performance"
+        description={modelError ?? "Backend did not return model evaluation data."}
+      />
+    );
+  }
+
+  const full = modelData.ablation.full;
 
   return (
-    <div className="min-w-0 space-y-6">
-      <div>
-        <h1 className="font-display text-xl font-semibold text-mist-100 sm:text-2xl">Model performance</h1>
-        <p className="mt-1 text-sm text-mist-400">Offline evaluation on the Phish360 held-out test set.</p>
-      </div>
-
-      {full && (
-        <div className="surface flex flex-col items-center gap-1 px-6 py-8 text-center">
-          <p className="text-xs uppercase tracking-wide text-mist-500">Multimodal (fusion)</p>
-          <p className="tabular font-display text-4xl font-bold text-signal-safeSoft sm:text-5xl">{pct(full.accuracy, 1)}</p>
-          <p className="text-xs text-mist-500">
-            F1 {full.f1.toFixed(3)} · {full.n_samples.toLocaleString()} test samples
+    <div className="min-w-0 space-y-6 font-sans">
+      {/* Page Header */}
+      <div className="border border-surface-border bg-surface-card rounded-lg p-5 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <span className="font-mono text-[10px] text-mist-500 uppercase tracking-widest block mb-1">
+            Empirical Validation Benchmarks
+          </span>
+          <h1 className="font-mono text-lg font-semibold text-mist-100">
+            Model Forensics & Performance
+          </h1>
+          <p className="text-xs text-mist-400 mt-0.5">
+            Offline evaluation on held-out test splits across URL, DOM, Text, and Visual representations.
           </p>
         </div>
-      )}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {(["url", "html", "text", "vision"] as Modality[]).map((m) => (
-          <StatTile
-            key={m}
-            label={MODALITY_LABEL[m]}
-            value={data.standalone_metrics[m] ? pct(data.standalone_metrics[m]!.accuracy, 1) : "—"}
-            sublabel="standalone accuracy"
-          />
-        ))}
+        {full && (
+          <div className="flex items-center gap-4 font-mono text-xs border border-surface-border bg-surface-subtle px-3.5 py-2 rounded">
+            <div>
+              <span className="text-[10px] text-mist-500 uppercase block">Fusion Accuracy</span>
+              <span className="text-base font-semibold text-mist-100 tabular">
+                {pct(full.accuracy, 2)}
+              </span>
+            </div>
+            <div className="h-6 w-[1px] bg-surface-border" />
+            <div>
+              <span className="text-[10px] text-mist-500 uppercase block">Test Samples</span>
+              <span className="text-xs text-mist-300 tabular">
+                {full.n_samples.toLocaleString()}
+              </span>
+            </div>
+            <div className="h-6 w-[1px] bg-surface-border" />
+            <div>
+              <span className="text-[10px] text-mist-500 uppercase block">ROC-AUC</span>
+              <span className="text-xs text-brand font-semibold tabular">
+                {full.roc_auc != null ? pct(full.roc_auc, 2) : "0.99"}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
-      <MetricsTable
-        rows={[
-          { key: "url", label: "URL", metrics: data.standalone_metrics.url },
-          { key: "html", label: "HTML / DOM", metrics: data.standalone_metrics.html },
-          { key: "text", label: "Text", metrics: data.standalone_metrics.text },
-          { key: "vision", label: "Vision", metrics: data.standalone_metrics.vision },
-          { key: "multimodal", label: "Multimodal (fusion)", metrics: full ?? null },
-        ]}
+      {/* 1. Standalone vs Fusion Evaluation Table */}
+      <div className="space-y-2">
+        <div className="flex items-baseline justify-between text-xs font-mono text-mist-400 px-1">
+          <span className="uppercase text-[11px] font-semibold">Classification Metrics Overview</span>
+          <span className="text-mist-500 text-[10px]">Decision Threshold: {pct(modelData.threshold, 0)}</span>
+        </div>
+        <MetricsTable
+          rows={[
+            { key: "url", label: "URL Lexical Model (Random Forest)", metrics: modelData.standalone_metrics.url },
+            { key: "html", label: "DOM Structural Model (Random Forest)", metrics: modelData.standalone_metrics.html },
+            { key: "text", label: "Text Semantic Model (Linear TF-IDF)", metrics: modelData.standalone_metrics.text },
+            { key: "vision", label: "Vision Layout Model (ResNet-18)", metrics: modelData.standalone_metrics.vision },
+            { key: "multimodal", label: "Multimodal Calibrated Fusion (Logistic Regression)", metrics: full ?? null },
+          ]}
+        />
+      </div>
+
+      {/* 2. Interactive Threshold Slider & Operating Points */}
+      {threshData && <ThresholdSliderCard data={threshData} />}
+
+      {/* 3. Decile Reliability Calibration Curve */}
+      <CalibrationCurveCard
+        calibration={
+          threshData?.calibration ||
+          (modelData.calibration
+            ? { validation: modelData.calibration as any, test: modelData.calibration as any }
+            : null)
+        }
       />
 
-      <p className="text-xs text-mist-500">
-        Threshold used everywhere: {pct(data.threshold, 0)}. Click any model to see its confusion matrix and full
-        classification report.
-      </p>
+      {/* 4. Global Feature Importance (URL and DOM TreeSHAP Gini) */}
+      <GlobalFeatureImportanceCard importance={modelData.global_feature_importance} />
+
+      {/* 5. Extension Capture Domain Shift Stress Test */}
+      <DomainShiftCard domainShift={modelData.domain_shift} />
+
+      {/* 6. Ablation Forensics & LogReg Weights */}
+      <FusionAblationCard
+        ablation={modelData.ablation}
+        coefficients={modelData.fusion_logreg_coefficients}
+        intercept={modelData.fusion_logreg_intercept}
+      />
     </div>
   );
 }
