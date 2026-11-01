@@ -115,7 +115,8 @@ def sample_curve(x: np.ndarray, y: np.ndarray, thresholds: np.ndarray = None, ma
     for idx in indices:
         item = {"x": round(float(x[idx]), 4), "y": round(float(y[idx]), 4)}
         if thresholds is not None and idx < len(thresholds):
-            item["threshold"] = round(float(thresholds[idx]), 4)
+            t_val = float(thresholds[idx])
+            item["threshold"] = 1.0 if (np.isinf(t_val) or np.isnan(t_val)) else round(t_val, 4)
         points.append(item)
     return points
 
