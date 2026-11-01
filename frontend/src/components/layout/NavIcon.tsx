@@ -1,6 +1,6 @@
-import { NavItem } from "../../lib/nav";
+export type NavIconName = "scan" | "history" | "research" | "models" | "layers" | "alert" | "eye";
 
-export function NavIcon({ name, className = "h-4 w-4" }: { name: NavItem["icon"]; className?: string }) {
+export function NavIcon({ name = "scan", className = "h-4 w-4" }: { name?: NavIconName | string; className?: string }) {
   const common = { className, viewBox: "0 0 20 20", fill: "none" as const };
   switch (name) {
     case "scan":

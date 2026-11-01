@@ -1,8 +1,10 @@
 import { useCallback, useRef, useState } from "react";
 import {
+  ExplanationsPayload,
   HtmlFeatures,
   Modality,
   PredictRequestInput,
+  ReviewBand,
   StreamEvent,
   UrlFeatures,
   streamPredict,
@@ -36,6 +38,9 @@ export interface FusionResult {
   strategy: string | null;
   fetchedFrom: string | null;
   threshold: number;
+  operatingPoint: string | null;
+  needsReview: boolean;
+  reviewBand: ReviewBand | null;
   requestId: string | null;
   durationMs: number | null;
   scanId: number | null;
@@ -74,6 +79,7 @@ export function usePipelineScan() {
   const [textWordCount, setTextWordCount] = useState<number | null>(null);
   const [visionInfo, setVisionInfo] = useState<VisionInfo | null>(null);
   const [fusion, setFusion] = useState<FusionResult | null>(null);
+  const [explanations, setExplanations] = useState<ExplanationsPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -93,6 +99,7 @@ export function usePipelineScan() {
     setTextWordCount(null);
     setVisionInfo(null);
     setFusion(null);
+    setExplanations(null);
     setError(null);
   }, []);
 
@@ -121,6 +128,7 @@ export function usePipelineScan() {
     setTextWordCount(null);
     setVisionInfo(null);
     setFusion(null);
+    setExplanations(null);
     setError(null);
 
     let localOrder = order;
@@ -231,11 +239,20 @@ export function usePipelineScan() {
             strategy: evt.fusion_strategy ?? null,
             fetchedFrom: evt.fetched_from ?? null,
             threshold: evt.threshold ?? 0.5,
+            operatingPoint: evt.operating_point ?? null,
+            needsReview: Boolean(evt.needs_review),
+            reviewBand: evt.review_band ?? null,
             requestId: evt.request_id ?? null,
             durationMs: evt.scan_duration_ms ?? null,
             scanId: evt.scan_id ?? null,
           });
           advance("fusion", "done");
+          break;
+        }
+        case "done": {
+          if (evt.explanations) {
+            setExplanations(evt.explanations);
+          }
           break;
         }
         case "error": {
@@ -271,6 +288,7 @@ export function usePipelineScan() {
     textWordCount,
     visionInfo,
     fusion,
+    explanations,
     error,
     start,
     reset,

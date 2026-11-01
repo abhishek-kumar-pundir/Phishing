@@ -4,73 +4,59 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: {
-          950: "#05070C",
-          900: "#0A0F1C",
-          850: "#0D1322",
-          800: "#111827",
-          700: "#1C2333",
-          600: "#2A3348",
+        // Flat near-black neutral surfaces
+        surface: {
+          canvas: "#090A0C",    // Background
+          subtle: "#0E1014",    // Faint inset / wells
+          card: "#121419",      // Primary card surface
+          raised: "#181B22",    // Raised popovers / hover
+          border: "#20242D",    // 1px hairline border
+          borderLight: "#2A303C",
         },
+        // ONE accent color across the interface
+        brand: {
+          DEFAULT: "#38C0E4",
+          soft: "#38C0E41A",    // 10% opacity
+          muted: "#38C0E433",   // 20% opacity
+          hover: "#4ED0F2",
+        },
+        // Verdict states ONLY - green/red/amber appear strictly for verdicts & review states
+        verdict: {
+          legit: "#22C55E",
+          legitSoft: "#22C55E1A",
+          phish: "#EF4444",
+          phishSoft: "#EF44441A",
+          review: "#F59E0B",
+          reviewSoft: "#F59E0B1A",
+          neutral: "#4B5563",
+        },
+        // Neutral typography scales
         mist: {
-          900: "#1B212B",
-          800: "#2A3140",
-          700: "#3B4456",
-          600: "#4E596D",
-          500: "#718096",
-          400: "#8592A6",
-          300: "#9AA6BA",
-          200: "#BCC5D3",
-          100: "#E6EAF2",
-          50: "#F5F7FB",
-        },
-        signal: {
-          scan: "#5B8DEF",
-          scanSoft: "#7FA6F5",
-          safe: "#2BB673",
-          safeSoft: "#4FD196",
-          danger: "#E2661C",
-          dangerSoft: "#F08A4B",
-          warn: "#E0B84B",
-          idle: "#3A4459",
+          50: "#F9FAFB",
+          100: "#F3F4F6",
+          200: "#E5E7EB",
+          300: "#D1D5DB",
+          400: "#9CA3AF",
+          500: "#6B7280",
+          600: "#4B5563",
+          700: "#374151",
+          800: "#1F2937",
+          900: "#111827",
         },
       },
       fontFamily: {
-        display: ["'Space Grotesk'", "system-ui", "sans-serif"],
-        body: ["'Inter'", "system-ui", "sans-serif"],
-        mono: ["'JetBrains Mono'", "ui-monospace", "SFMono-Regular", "monospace"],
-      },
-      backdropBlur: {
-        xs: "2px",
-      },
-      boxShadow: {
-        glass: "0 1px 0 0 rgba(255,255,255,0.05) inset, 0 20px 60px -20px rgba(0,0,0,0.6)",
-        glow: "0 0 0 1px rgba(91,141,239,0.25), 0 0 40px -8px rgba(91,141,239,0.35)",
-        glowSafe: "0 0 0 1px rgba(43,182,115,0.25), 0 0 40px -8px rgba(43,182,115,0.35)",
-        glowDanger: "0 0 0 1px rgba(226,102,28,0.25), 0 0 40px -8px rgba(226,102,28,0.35)",
+        sans: ["'Geist Sans'", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        mono: ["'Geist Mono'", "ui-monospace", "SFMono-Regular", "monospace"],
+        serif: ["'Instrument Serif'", "Georgia", "serif"],
       },
       keyframes: {
-        fadeIn: {
-          "0%": { opacity: "0", transform: "translateY(6px)" },
+        reveal: {
+          "0%": { opacity: "0", transform: "translateY(4px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        pulseGlow: {
-          "0%, 100%": { opacity: "0.55" },
-          "50%": { opacity: "1" },
-        },
-        dash: {
-          to: { strokeDashoffset: "0" },
-        },
-        drift: {
-          "0%": { backgroundPosition: "0% 0%" },
-          "100%": { backgroundPosition: "120% 40%" },
         },
       },
       animation: {
-        fadeIn: "fadeIn 0.35s ease-out both",
-        pulseGlow: "pulseGlow 1.8s ease-in-out infinite",
-        dash: "dash 0.9s ease-out forwards",
-        drift: "drift 14s linear infinite",
+        reveal: "reveal 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards",
       },
     },
   },

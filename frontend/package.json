@@ -9,6 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/geist-mono": "^5.3.0",
+    "@fontsource/geist-sans": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
     "@react-three/drei": "^9.99.0",
     "@react-three/fiber": "^8.15.19",
     "@types/three": "^0.160.0",

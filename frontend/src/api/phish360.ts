@@ -1,5 +1,5 @@
 // Thin client for the Phish360 FastAPI backend. Every field here mirrors
-// api/app.py exactly -- nothing here invents a field the backend doesn't send.
+// backend/api/app.py exactly -- nothing here invents a field the backend doesn't send.
 
 export const API_BASE = import.meta.env.VITE_PHISH360_API ?? "http://localhost:8000";
 
@@ -10,6 +10,10 @@ export interface PredictRequestInput {
   html?: string;
   screenshot?: File;
   allowFetch: boolean;
+  threshold?: number;
+  reviewBandLow?: number;
+  reviewBandHigh?: number;
+  operatingPoint?: "balanced" | "high_recall" | "high_precision" | string;
 }
 
 export interface UrlFeatures {
@@ -60,7 +64,250 @@ export interface HtmlFeatures {
   text_to_html_ratio: number;
 }
 
-// One line of the SSE stream, as emitted by predict_stream()'s _sse() calls.
+// --- SHAP and Feature Attribution Types (Phase A2) -----------------------
+
+export interface FeatureAttribution {
+  feature: string;
+  value: number;
+  shap_value: number;
+  magnitude: number;
+  direction: "phishing" | "legitimate";
+}
+
+export interface ModalityExplanationUrl {
+  modality: "url";
+  method: "TreeSHAP";
+  notice: string;
+  base_value: number;
+  top_features: FeatureAttribution[];
+}
+
+export interface ModalityExplanationHtml {
+  modality: "html";
+  method: "TreeSHAP";
+  notice: string;
+  base_value: number;
+  top_features: FeatureAttribution[];
+}
+
+export interface TextAttributionNgram {
+  ngram: string;
+  tfidf: number;
+  coefficient: number;
+  contribution: number;
+  magnitude: number;
+  direction: "phishing" | "legitimate";
+}
+
+export interface ModalityExplanationText {
+  modality: "text";
+  method: "linear_coefficient_attribution";
+  notice: string;
+  intercept: number;
+  top_ngrams: TextAttributionNgram[];
+}
+
+export interface ExplanationsPayload {
+  url?: ModalityExplanationUrl;
+  html?: ModalityExplanationHtml;
+  text?: ModalityExplanationText;
+}
+
+// --- Global Feature Importance (Phase A2) --------------------------------
+
+export interface GlobalFeatureItem {
+  feature: string;
+  importance: number;
+}
+
+export interface GlobalFeatureImportance {
+  url: GlobalFeatureItem[];
+  html: GlobalFeatureItem[];
+  method: string;
+  description: string;
+  notice: string;
+}
+
+// --- Review Band & Operating Points (Phase A1) ----------------------------
+
+export interface ReviewBand {
+  low: number;
+  high: number;
+}
+
+export interface OperatingPointMetrics {
+  threshold: number;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  fpr: number;
+  f1: number;
+  tp: number;
+  fp: number;
+  tn: number;
+  fn: number;
+}
+
+export interface OperatingPointConfig {
+  name: "balanced" | "high_recall" | "high_precision" | "default" | string;
+  threshold: number;
+  justification: string;
+  review_band: ReviewBand | null;
+  validation_metrics: OperatingPointMetrics;
+  test_metrics: OperatingPointMetrics;
+}
+
+// --- Threshold Analysis & Calibration (Phase A1) --------------------------
+
+export interface ThresholdTableRow {
+  threshold: number;
+  precision: number;
+  recall: number;
+  fpr: number;
+  f1: number;
+  tp: number;
+  fp: number;
+  tn: number;
+  fn: number;
+  total: number;
+}
+
+export interface ReliabilityBin {
+  bin_index: number;
+  bin_center: number;
+  count: number;
+  mean_predicted: number;
+  observed_fraction: number;
+}
+
+export interface CalibrationSplitMetrics {
+  brier_score: number;
+  expected_calibration_error: number;
+  reliability_bins: ReliabilityBin[];
+}
+
+export interface ThresholdAnalysisResponse {
+  threshold_step: number;
+  default_threshold: number;
+  operating_points: Record<string, OperatingPointConfig>;
+  validation_table: ThresholdTableRow[];
+  test_table: ThresholdTableRow[];
+  pr_curve: {
+    validation: { threshold: number; precision: number; recall: number }[];
+    test: { threshold: number; precision: number; recall: number }[];
+  };
+  roc_curve: {
+    validation: { threshold: number; fpr: number; tpr: number }[];
+    test: { threshold: number; fpr: number; tpr: number }[];
+  };
+  calibration: {
+    validation: CalibrationSplitMetrics;
+    test: CalibrationSplitMetrics;
+  };
+}
+
+// --- Domain Shift (Phase A3) ---------------------------------------------
+
+export interface BinaryEvalMetrics {
+  accuracy: number;
+  precision: number;
+  recall: number;
+  fpr: number;
+  f1: number;
+  roc_auc: number;
+  pr_auc: number;
+  brier_score: number;
+  confusion_matrix: {
+    tn: number;
+    fp: number;
+    fn: number;
+    tp: number;
+  };
+}
+
+export interface FlipStats {
+  total_samples: number;
+  total_flips: number;
+  flip_rate: number;
+  missed_phishing_introduced: number;
+  false_positives_introduced: number;
+  phishing_corrected: number;
+  legitimate_corrected: number;
+}
+
+export interface DomainShiftProposedMitigation {
+  id: string;
+  title: string;
+  description: string;
+}
+
+export interface DomainShiftResponse {
+  evaluation_name: string;
+  sample_size: number;
+  sample_breakdown: { legitimate: number; phishing: number };
+  viewport: { width: number; height: number; type: string };
+  offline_rendering_notice: string;
+  vision_standalone: {
+    original_dataset_screenshots: BinaryEvalMetrics;
+    viewport_offline_screenshots: BinaryEvalMetrics;
+    delta: {
+      accuracy_delta: number;
+      recall_delta: number;
+      precision_delta: number;
+      fpr_delta: number;
+      roc_auc_delta: number;
+    };
+    flips_by_threshold: Record<string, FlipStats>;
+    distribution_shift: {
+      correlation_orig_vs_viewport: number;
+      mean_absolute_difference: number;
+      legitimate: {
+        orig_mean: number;
+        orig_std: number;
+        viewport_mean: number;
+        viewport_std: number;
+        mean_shift: number;
+      };
+      phishing: {
+        orig_mean: number;
+        orig_std: number;
+        viewport_mean: number;
+        viewport_std: number;
+        mean_shift: number;
+      };
+    };
+  };
+  fusion_model: {
+    original_fusion_full: BinaryEvalMetrics;
+    viewport_fusion_full: BinaryEvalMetrics;
+    fusion_minus_vision_fallback: BinaryEvalMetrics;
+    delta: {
+      accuracy_delta: number;
+      recall_delta: number;
+      precision_delta: number;
+      fpr_delta: number;
+      roc_auc_delta: number;
+    };
+    flips_by_threshold: Record<string, FlipStats>;
+  };
+  key_findings: {
+    standalone_vision_accuracy_drop: number;
+    standalone_vision_fpr_increase: number;
+    fusion_accuracy_drop: number;
+    fusion_flip_rate_at_default: number;
+    fusion_flip_rate_at_balanced: number;
+  };
+  proposed_mitigations: DomainShiftProposedMitigation[];
+  metadata: {
+    timestamp: string;
+    total_duration_seconds: number;
+    rendering_seconds: number;
+    scoring_seconds: number;
+  };
+}
+
+// --- SSE Stream Event ----------------------------------------------------
+
 export interface StreamEvent {
   stage: "url" | "fetch" | "html" | "text" | "vision" | "fusion" | "done" | "error";
   score?: number | null;
@@ -84,10 +331,39 @@ export interface StreamEvent {
   phishing_probability?: number | null;
   predicted_label?: "phishing" | "legitimate" | null;
   threshold?: number;
+  operating_point?: string | null;
+  needs_review?: boolean;
+  review_band?: ReviewBand | null;
   fusion_strategy?: string;
   fetched_from?: string | null;
   scan_duration_ms?: number;
+  explanations?: ExplanationsPayload | null;
 }
+
+// --- Direct POST /predict Response ---------------------------------------
+
+export interface PredictResponse {
+  request_id: string;
+  scan_id: number | null;
+  url: string;
+  fetched_from: string | null;
+  phishing_probability: number;
+  predicted_label: "phishing" | "legitimate";
+  threshold: number;
+  operating_point: string | null;
+  needs_review: boolean;
+  review_band: ReviewBand | null;
+  fusion_strategy: string;
+  scan_duration_ms: number;
+  per_modality_scores: Record<Modality, number | null>;
+  evidence: {
+    url_features: UrlFeatures | null;
+    html_features: HtmlFeatures | null;
+  };
+  explanations: ExplanationsPayload | null;
+}
+
+// --- Model Evaluation / Info ---------------------------------------------
 
 export interface HealthResponse {
   status: string;
@@ -133,6 +409,14 @@ export interface ModelInfoResponse {
   fusion_logreg_coefficients: Partial<Record<Modality, number>> | null;
   fusion_logreg_intercept: number | null;
   threshold: number;
+  operating_points: Record<string, OperatingPointConfig> | null;
+  calibration: {
+    brier_score: number;
+    expected_calibration_error: number;
+    reliability_bins: ReliabilityBin[];
+  } | null;
+  global_feature_importance: GlobalFeatureImportance | null;
+  domain_shift: DomainShiftResponse | null;
 }
 
 export interface ErrorExample {
@@ -163,6 +447,12 @@ export async function fetchModelInfo(): Promise<ModelInfoResponse> {
   return res.json();
 }
 
+export async function fetchThresholdAnalysis(): Promise<ThresholdAnalysisResponse> {
+  const res = await fetch(`${API_BASE}/threshold-analysis`);
+  if (!res.ok) throw new Error(`/threshold-analysis failed: ${res.status}`);
+  return res.json();
+}
+
 export async function fetchErrorAnalysis(limit = 8): Promise<ErrorAnalysisResponse> {
   const res = await fetch(`${API_BASE}/error-analysis?limit=${limit}`);
   if (!res.ok) throw new Error(`/error-analysis failed: ${res.status}`);
@@ -181,6 +471,11 @@ export interface ScanRecord {
   fused_probability: number | null;
   predicted_label: "phishing" | "legitimate" | null;
   fusion_strategy: string | null;
+  threshold: number | null;
+  operating_point: string | null;
+  needs_review: number | null;
+  review_band_low: number | null;
+  review_band_high: number | null;
 }
 
 export interface HistogramBucket {
@@ -223,7 +518,6 @@ export async function fetchScanStats(): Promise<ScanStatsResponse> {
 }
 
 // --- Full historical scan detail (GET /scans/{id}) -----------------------
-// Mirrors api/app.py's _scan_record_to_detail() exactly.
 
 export interface ScanDetailResponse {
   id: number;
@@ -240,6 +534,9 @@ export interface ScanDetailResponse {
   predicted_label: "phishing" | "legitimate" | null;
   fusion_strategy: string | null;
   threshold: number | null;
+  operating_point: string | null;
+  needs_review: boolean;
+  review_band: ReviewBand | null;
   scan_duration_ms: number | null;
   evidence: {
     url_features: UrlFeatures | null;
@@ -249,6 +546,7 @@ export interface ScanDetailResponse {
     vision: { embedding_dim: number | null; backbone: string | null } | null;
     screenshot_url: string | null;
   };
+  explanations: ExplanationsPayload | null;
 }
 
 export async function fetchScanDetail(scanId: number | string): Promise<ScanDetailResponse> {
@@ -267,14 +565,27 @@ function buildFormData(input: PredictRequestInput): FormData {
   if (input.html) form.set("html", input.html);
   form.set("allow_fetch", String(input.allowFetch));
   if (input.screenshot) form.set("screenshot", input.screenshot);
+  if (input.threshold !== undefined) form.set("threshold", String(input.threshold));
+  if (input.reviewBandLow !== undefined) form.set("review_band_low", String(input.reviewBandLow));
+  if (input.reviewBandHigh !== undefined) form.set("review_band_high", String(input.reviewBandHigh));
+  if (input.operatingPoint) form.set("operating_point", input.operatingPoint);
   return form;
 }
 
+export async function predict(input: PredictRequestInput): Promise<PredictResponse> {
+  const res = await fetch(`${API_BASE}/predict`, {
+    method: "POST",
+    body: buildFormData(input),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`/predict failed: ${res.status} ${detail}`);
+  }
+  return res.json();
+}
+
 /**
- * Streams /predict/stream and yields one StreamEvent per SSE line, as it
- * arrives -- no buffering the whole response first. Uses fetch() +
- * ReadableStream because this endpoint takes a POST body (form + optional
- * file upload), which the browser's native EventSource cannot send.
+ * Streams /predict/stream and yields one StreamEvent per SSE line.
  */
 export async function* streamPredict(
   input: PredictRequestInput,

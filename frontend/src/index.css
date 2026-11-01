@@ -8,18 +8,19 @@ html, body, #root {
 
 html {
   overflow-x: hidden;
+  background-color: #090A0C;
 }
 
 body {
-  @apply bg-ink-900 text-mist-100 font-body antialiased;
+  background-color: #090A0C;
+  color: #F3F4F6;
+  font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
-  background-image:
-    radial-gradient(ellipse 70% 55% at 12% -8%, rgba(91, 141, 239, 0.10), transparent),
-    radial-gradient(ellipse 55% 45% at 100% 0%, rgba(43, 182, 115, 0.055), transparent),
-    radial-gradient(ellipse 60% 40% at 50% 110%, rgba(91, 141, 239, 0.05), transparent);
-  background-attachment: fixed;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
@@ -27,29 +28,30 @@ body {
   min-width: 0;
 }
 
+/* Restrained hairline scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2A3348 transparent;
+  scrollbar-color: #20242D transparent;
 }
 
 *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #2A3348;
-  border-radius: 999px;
+  background: #20242D;
+  border-radius: 3px;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
 }
 
 :focus-visible {
-  outline: 2px solid #5B8DEF;
+  outline: 1.5px solid #38C0E4;
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
+/* Strict prefers-reduced-motion support */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -61,35 +63,50 @@ body {
 
 .tabular {
   font-variant-numeric: tabular-nums;
+  font-family: 'Geist Mono', monospace;
 }
 
-/* Consistent surface card used throughout the app instead of ad-hoc styles */
+/* Consistent flat surfaces and 1px hairline borders on 8px grid */
 .surface {
-  @apply min-w-0 rounded-2xl border border-white/[0.08] bg-white/[0.03] shadow-glass;
+  background-color: #121419;
+  border: 1px solid #20242D;
+  border-radius: 8px;
 }
 
-.surface-tight {
-  @apply min-w-0 rounded-xl border border-white/[0.08] bg-white/[0.03];
+.surface-raised {
+  background-color: #181B22;
+  border: 1px solid #2A303C;
+  border-radius: 8px;
+}
+
+.surface-inset {
+  background-color: #0E1014;
+  border: 1px solid #1A1D24;
+  border-radius: 6px;
 }
 
 .hairline {
-  @apply border-white/[0.07];
+  border-color: #20242D;
 }
 
-.faint-grid-bg {
-  background-image:
-    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
-  background-size: 28px 28px;
-  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 40%, transparent 90%);
-  mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 40%, transparent 90%);
+.hairline-b {
+  border-bottom: 1px solid #20242D;
 }
 
-/* Any raw code / evidence blocks must never blow out page width */
+.hairline-r {
+  border-right: 1px solid #20242D;
+}
+
+.hairline-t {
+  border-top: 1px solid #20242D;
+}
+
 pre, code {
   overflow-wrap: anywhere;
+  font-family: 'Geist Mono', monospace;
 }
 
 table {
   width: 100%;
+  border-collapse: collapse;
 }
