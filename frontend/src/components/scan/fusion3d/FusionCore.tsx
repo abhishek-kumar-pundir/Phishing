@@ -1,73 +1,91 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { MeshDistortMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import { RiskTone, TONE_HEX, TONE_HEX_SOFT } from "../../../lib/tone";
 
 interface Props {
   tone: RiskTone;
-  active: boolean; // still scanning -> faster morph, brighter pulse
-  revealed: boolean; // verdict known -> settle into final color with one burst
+  active: boolean; // pipeline currently executing
+  revealed: boolean; // fusion completed -> resolve into verdict with brief settle
   reducedMotion: boolean;
 }
 
+const NEUTRAL_COLOR = new THREE.Color("#20242D");
+const NEUTRAL_EMISSIVE = new THREE.Color("#121419");
+
 export function FusionCore({ tone, active, revealed, reducedMotion }: Props) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const materialRef = useRef<any>(null);
-  const burstStart = useRef<number | null>(null);
+  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+  const settleStartTime = useRef<number | null>(null);
   const prevRevealed = useRef(revealed);
-  const color = new THREE.Color(TONE_HEX[tone]);
-  const emissive = new THREE.Color(TONE_HEX_SOFT[tone]);
 
   if (revealed && !prevRevealed.current) {
-    burstStart.current = performance.now();
+    settleStartTime.current = performance.now();
   }
   prevRevealed.current = revealed;
 
-  useFrame((state, delta) => {
+  const targetColor = revealed ? new THREE.Color(TONE_HEX[tone]) : NEUTRAL_COLOR;
+  const targetEmissive = revealed ? new THREE.Color(TONE_HEX_SOFT[tone]) : NEUTRAL_EMISSIVE;
+
+  useFrame((_, delta) => {
     if (!meshRef.current) return;
-    const t = state.clock.getElapsedTime();
 
-    if (!reducedMotion) {
-      meshRef.current.rotation.y += delta * (active ? 0.35 : 0.12);
-      meshRef.current.rotation.x = Math.sin(t * 0.2) * 0.15;
-    }
+    // Settle motion: one-shot damped spring when verdict lands
+    let currentScale = 1.0;
 
-    // Idle breathing scale, plus a one-shot burst when the verdict lands.
-    let scale = 1 + Math.sin(t * (active ? 2.2 : 1)) * (reducedMotion ? 0.01 : active ? 0.045 : 0.02);
-    if (burstStart.current != null) {
-      const elapsed = (performance.now() - burstStart.current) / 1000;
-      const duration = 0.7;
+    if (!reducedMotion && settleStartTime.current != null) {
+      const elapsed = (performance.now() - settleStartTime.current) / 1000;
+      const duration = 0.65;
       if (elapsed < duration) {
-        const p = elapsed / duration;
-        const burst = Math.sin(p * Math.PI) * 0.28 * (1 - p * 0.3);
-        scale += burst;
+        const progress = elapsed / duration;
+        // Damped harmonic settle: overshoot slightly and settle to 1.0
+        const envelope = Math.exp(-progress * 5);
+        const osc = Math.sin(progress * Math.PI * 4);
+        currentScale = 1.0 + envelope * osc * 0.18;
       } else {
-        burstStart.current = null;
+        settleStartTime.current = null;
+        currentScale = 1.0;
       }
     }
-    meshRef.current.scale.setScalar(scale);
+
+    meshRef.current.scale.setScalar(currentScale);
 
     if (materialRef.current) {
-      materialRef.current.color.lerp(color, reducedMotion ? 1 : 0.06);
-      materialRef.current.emissive?.lerp?.(emissive, reducedMotion ? 1 : 0.06);
-      materialRef.current.distort = reducedMotion ? 0.08 : active ? 0.45 : 0.22;
+      if (reducedMotion) {
+        materialRef.current.color.copy(targetColor);
+        materialRef.current.emissive.copy(targetEmissive);
+      } else {
+        materialRef.current.color.lerp(targetColor, 0.12);
+        materialRef.current.emissive.lerp(targetEmissive, 0.12);
+      }
     }
   });
 
   return (
-    <mesh ref={meshRef}>
-      <icosahedronGeometry args={[1, 12]} />
-      <MeshDistortMaterial
-        ref={materialRef}
-        color={TONE_HEX.idle}
-        emissive={TONE_HEX_SOFT.idle}
-        emissiveIntensity={0.35}
-        roughness={0.15}
-        metalness={0.35}
-        distort={0.3}
-        speed={reducedMotion ? 0 : active ? 3.2 : 1.2}
-      />
-    </mesh>
+    <group position={[0, 0, 0]}>
+      {/* Central Fusion Core Polyhedron */}
+      <mesh ref={meshRef}>
+        <dodecahedronGeometry args={[0.9, 0]} />
+        <meshStandardMaterial
+          ref={materialRef}
+          color={revealed ? TONE_HEX[tone] : "#20242D"}
+          emissive={revealed ? TONE_HEX_SOFT[tone] : "#121419"}
+          emissiveIntensity={revealed ? 0.6 : 0.15}
+          roughness={0.25}
+          metalness={0.4}
+          wireframe={false}
+        />
+      </mesh>
+
+      {/* Subtle outer geometric ring / cage around core */}
+      <mesh rotation={[Math.PI / 4, 0, 0]}>
+        <torusGeometry args={[1.25, 0.02, 16, 64]} />
+        <meshBasicMaterial
+          color={revealed ? TONE_HEX[tone] : "#363D4E"}
+          transparent
+          opacity={revealed ? 0.4 : 0.2}
+        />
+      </mesh>
+    </group>
   );
 }

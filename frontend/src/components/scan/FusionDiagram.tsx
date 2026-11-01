@@ -1,87 +1,192 @@
+import React from "react";
 import { Modality } from "../../api/phish360";
 import { UnifiedScanResult } from "../../lib/scanResult";
 import { pct, riskTone } from "../../lib/format";
+import { TONE_HEX } from "../../lib/tone";
 
-const NODE_COLOR: Record<string, string> = {
-  safe: "#2BB673",
-  warn: "#E0B84B",
-  danger: "#E2661C",
-  idle: "#3A4459",
-};
+interface Props {
+  result: UnifiedScanResult;
+  animate?: boolean;
+  selectedModality?: Modality;
+  onSelectModality?: (m: Modality) => void;
+}
 
-const SOURCES: { key: Modality; label: string; y: number }[] = [
-  { key: "url", label: "URL", y: 36 },
-  { key: "html", label: "DOM", y: 92 },
-  { key: "text", label: "TEXT", y: 148 },
-  { key: "vision", label: "VISION", y: 204 },
+const MODALITY_NODES: {
+  key: Modality;
+  label: string;
+  x: number;
+  y: number;
+  weight: number;
+}[] = [
+  { key: "url", label: "URL", x: 70, y: 70, weight: 3.5985 },
+  { key: "html", label: "DOM", x: 70, y: 210, weight: 2.6307 },
+  { key: "text", label: "TEXT", x: 410, y: 210, weight: 4.9169 },
+  { key: "vision", label: "VISION", x: 410, y: 70, weight: 1.2024 },
 ];
 
-export function FusionDiagram({ result, animate = false }: { result: UnifiedScanResult; animate?: boolean }) {
+const TOTAL_WEIGHT = 3.5985 + 2.6307 + 4.9169 + 1.2024; // 12.3485
+const CORE_X = 240;
+const CORE_Y = 140;
+
+export function FusionDiagram({
+  result,
+  animate = false,
+  selectedModality = "url",
+  onSelectModality,
+}: Props) {
   const fusionTone = riskTone(result.fusion.probability);
-  const fusionColor = NODE_COLOR[fusionTone];
+  const revealed = result.fusion.probability != null && result.fusion.label != null;
+  const coreColor = revealed ? TONE_HEX[fusionTone] : "#20242D";
 
   return (
-    <div className="surface min-w-0 px-5 py-5">
-      <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.07em] text-mist-500">Multimodal fusion</p>
-      <svg viewBox="0 0 560 240" className="h-auto w-full" role="img" aria-label="Fusion architecture diagram">
-        {SOURCES.map((s, i) => {
-          const score = result.scores[s.key];
-          const color = NODE_COLOR[riskTone(score)];
-          const path = `M96,${s.y} C220,${s.y} 220,120 320,120`;
+    <div className="relative border border-surface-border bg-surface-canvas rounded-lg p-4 font-sans select-none min-w-0">
+      <div className="flex items-center justify-between mb-3 text-[11px] font-mono text-mist-500">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand" />
+          <span>2D PIPELINE TOPOLOGY (FALLBACK)</span>
+        </div>
+        <span>EDGE THICKNESS = LOGREG WEIGHT</span>
+      </div>
+
+      <svg
+        viewBox="0 0 480 280"
+        className="w-full h-auto max-h-[420px]"
+        role="img"
+        aria-label="Fusion Pipeline Diagram"
+      >
+        {/* Converging Weighted Edges */}
+        {MODALITY_NODES.map((node) => {
+          const score = result.scores[node.key];
+          const tone = riskTone(score);
+          const edgeColor = score != null ? TONE_HEX[tone] : "#20242D";
+          const normalizedWeight = node.weight / TOTAL_WEIGHT;
+          const strokeWidth = 1.5 + normalizedWeight * 6; // 1.5px to 4px
+          const isSelected = selectedModality === node.key;
+
+          // Smooth Bezier path from node center to central core
+          const path = `M ${node.x} ${node.y} Q ${(node.x + CORE_X) / 2} ${CORE_Y} ${CORE_X} ${CORE_Y}`;
+
           return (
-            <g key={s.key}>
+            <g key={`edge-${node.key}`}>
               <path
                 d={path}
                 fill="none"
-                stroke={score != null ? color : "#2A3348"}
-                strokeWidth={score != null ? 1.75 : 1}
-                strokeOpacity={score != null ? 0.55 : 0.35}
-                strokeDasharray={animate ? "500" : undefined}
-                strokeDashoffset={animate ? "500" : undefined}
-                style={animate ? { animation: `dash 0.9s ease-out ${i * 0.12}s forwards` } : undefined}
+                stroke={isSelected ? "#38C0E4" : edgeColor}
+                strokeWidth={strokeWidth}
+                strokeOpacity={score != null ? 0.75 : 0.3}
+                strokeLinecap="round"
               />
-              <rect x="8" y={s.y - 18} width="88" height="36" rx="9" fill="#0D1322" stroke={score != null ? color : "#2A3348"} strokeOpacity="0.5" />
-              <text x="52" y={s.y - 3} textAnchor="middle" fontSize="10" fill="#A9B3C7" fontFamily="Space Grotesk, sans-serif">
-                {s.label}
-              </text>
-              <text x="52" y={s.y + 11} textAnchor="middle" fontSize="11" fontWeight={600} fill={score != null ? color : "#6B7690"}>
-                {score != null ? pct(score, 0) : "—"}
-              </text>
             </g>
           );
         })}
 
-        <circle cx="320" cy="120" r="34" fill="#0D1322" stroke={fusionColor} strokeOpacity="0.6" strokeWidth="1.75" />
-        <text x="320" y="115" textAnchor="middle" fontSize="9" fill="#A9B3C7" fontFamily="Space Grotesk, sans-serif">
-          FUSION
-        </text>
-        <text x="320" y="130" textAnchor="middle" fontSize="13" fontWeight={700} fill={fusionColor}>
-          {pct(result.fusion.probability, 0)}
-        </text>
+        {/* Central Fusion Core */}
+        <g transform={`translate(${CORE_X}, ${CORE_Y})`}>
+          {/* Core Outer Ring */}
+          <circle
+            r={34}
+            fill="#121419"
+            stroke={coreColor}
+            strokeWidth={revealed ? 2 : 1}
+            strokeOpacity={revealed ? 0.9 : 0.4}
+          />
+          {revealed && (
+            <circle
+              r={38}
+              fill="none"
+              stroke={coreColor}
+              strokeWidth={1}
+              strokeOpacity={0.3}
+              strokeDasharray="4 4"
+            />
+          )}
 
-        <path
-          d="M354,120 L470,120"
-          fill="none"
-          stroke={fusionColor}
-          strokeOpacity="0.55"
-          strokeWidth="1.75"
-          strokeDasharray={animate ? "200" : undefined}
-          strokeDashoffset={animate ? "200" : undefined}
-          style={animate ? { animation: "dash 0.6s ease-out 0.55s forwards" } : undefined}
-        />
-        <polygon points="470,115 480,120 470,125" fill={fusionColor} fillOpacity="0.7" />
+          {/* Core Labels */}
+          <text
+            y={revealed ? -6 : -2}
+            textAnchor="middle"
+            fill="#8E99AE"
+            fontSize="9"
+            fontFamily="Geist Mono, monospace"
+            fontWeight="600"
+            letterSpacing="0.08em"
+          >
+            FUSION
+          </text>
+          <text
+            y={revealed ? 14 : 12}
+            textAnchor="middle"
+            fill={revealed ? coreColor : "#64748B"}
+            fontSize={revealed ? "13" : "11"}
+            fontFamily="Geist Mono, monospace"
+            fontWeight="bold"
+          >
+            {revealed ? pct(result.fusion.probability, 0) : "STANDBY"}
+          </text>
+        </g>
 
-        <rect x="486" y="98" width="66" height="44" rx="10" fill="#0D1322" stroke={fusionColor} strokeOpacity="0.6" strokeWidth="1.5" />
-        <text x="519" y="116" textAnchor="middle" fontSize="9" fill="#A9B3C7" fontFamily="Space Grotesk, sans-serif">
-          VERDICT
-        </text>
-        <text x="519" y="132" textAnchor="middle" fontSize="12" fontWeight={700} fill={fusionColor}>
-          {result.fusion.label === "phishing" ? "RISK" : result.fusion.label === "legitimate" ? "SAFE" : "—"}
-        </text>
+        {/* 4 Modality Nodes */}
+        {MODALITY_NODES.map((node) => {
+          const score = result.scores[node.key];
+          const skipReason = result.skipReasons[node.key];
+          const tone = riskTone(score);
+          const color = score != null ? TONE_HEX[tone] : "#20242D";
+          const isSelected = selectedModality === node.key;
+
+          return (
+            <g
+              key={node.key}
+              transform={`translate(${node.x}, ${node.y})`}
+              onClick={() => onSelectModality?.(node.key)}
+              className="cursor-pointer"
+            >
+              {/* Node Background Disc */}
+              <circle
+                r={26}
+                fill="#121419"
+                stroke={isSelected ? "#38C0E4" : color}
+                strokeWidth={isSelected ? 2 : 1.5}
+              />
+
+              {/* Radial Probability Arc (if scored) */}
+              {score != null && (
+                <circle
+                  r={29}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={2}
+                  strokeDasharray={`${score * 182} 182`}
+                  strokeLinecap="round"
+                  transform="rotate(-90)"
+                />
+              )}
+
+              {/* Node Title & Score Text */}
+              <text
+                y={-4}
+                textAnchor="middle"
+                fill="#CBD5E1"
+                fontSize="9"
+                fontFamily="Geist Mono, monospace"
+                fontWeight="600"
+                letterSpacing="0.06em"
+              >
+                {node.label}
+              </text>
+              <text
+                y={12}
+                textAnchor="middle"
+                fill={score != null ? color : "#64748B"}
+                fontSize="11"
+                fontFamily="Geist Mono, monospace"
+                fontWeight="bold"
+              >
+                {score != null ? pct(score, 0) : skipReason ? "SKIP" : "—"}
+              </text>
+            </g>
+          );
+        })}
       </svg>
-      <p className="mt-1 text-[11px] text-mist-500">
-        Strategy: {result.fusion.strategy ?? "—"} · threshold {pct(result.fusion.threshold, 0)}
-      </p>
     </div>
   );
 }

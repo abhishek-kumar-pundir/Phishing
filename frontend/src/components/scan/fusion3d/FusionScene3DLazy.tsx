@@ -1,4 +1,5 @@
 import { Suspense, lazy } from "react";
+import { Modality } from "../../../api/phish360";
 import { UnifiedScanResult } from "../../../lib/scanResult";
 
 const FusionScene3DImpl = lazy(() =>
@@ -7,13 +8,21 @@ const FusionScene3DImpl = lazy(() =>
 
 function ScenePlaceholder() {
   return (
-    <div className="flex h-[320px] w-full min-w-0 items-center justify-center sm:h-[380px] lg:h-[440px]">
-      <div className="h-16 w-16 animate-pulseGlow rounded-full border border-signal-scan/30 bg-signal-scan/10" />
+    <div className="flex h-[380px] sm:h-[420px] lg:h-[460px] w-full min-w-0 items-center justify-center border border-surface-border bg-surface-canvas rounded-lg">
+      <div className="flex items-center gap-2 font-mono text-xs text-mist-500">
+        <span className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+        <span>INITIALIZING PIPELINE TOPOLOGY…</span>
+      </div>
     </div>
   );
 }
 
-export function FusionScene3DLazy(props: { result: UnifiedScanResult; running: boolean }) {
+export function FusionScene3DLazy(props: {
+  result: UnifiedScanResult;
+  running: boolean;
+  selectedModality?: Modality;
+  onSelectModality?: (m: Modality) => void;
+}) {
   return (
     <Suspense fallback={<ScenePlaceholder />}>
       <FusionScene3DImpl {...props} />

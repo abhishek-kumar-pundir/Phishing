@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useScanContext } from "../context/ScanContext";
-import { ScanTheater } from "../components/scan/ScanTheater";
-import { ScanResultView } from "../components/scan/ScanResultView";
+import { ScanWorkspace } from "../components/scan/ScanWorkspace";
 import { EmptyState } from "../components/ui/EmptyState";
 import { useScanDetail } from "../hooks/useScanDetail";
 import { unifiedFromDetail, unifiedFromLive } from "../lib/scanResult";
@@ -16,13 +15,11 @@ export default function ScanPage() {
   const { pipeline, liveId, screenshotObjectUrl, clientHtml } = useScanContext();
   const navigate = useNavigate();
 
-  // True for the entire lifetime of "the scan this browser tab just ran" --
-  // true while it's running under /scan/live-xxx, and STILL true after we
-  // silently swap the URL to /scan/<persisted id> once it finishes. That's
-  // the fix: we never fall through to a fetch+loading-spinner render for
-  // data we already have in memory, so nothing flickers or jumps.
+  // True for the entire lifetime of "the scan this browser tab just ran"
   const isThisSessionsRun =
-    scanId != null && (scanId === liveId || (pipeline.fusion?.scanId != null && String(pipeline.fusion.scanId) === scanId));
+    scanId != null &&
+    (scanId === liveId ||
+      (pipeline.fusion?.scanId != null && String(pipeline.fusion.scanId) === scanId));
 
   useEffect(() => {
     if (scanId === liveId && pipeline.phase === "done" && pipeline.fusion?.scanId != null) {
@@ -39,6 +36,7 @@ export default function ScanPage() {
       modalityScores: pipeline.modalityScores,
       modalitySkipReason: pipeline.modalitySkipReason,
       fusion: pipeline.fusion,
+      explanations: pipeline.explanations,
       urlFeatures: pipeline.urlFeatures,
       htmlFeatures: pipeline.htmlFeatures,
       fetchInfo: pipeline.fetchInfo,
@@ -52,31 +50,26 @@ export default function ScanPage() {
 
     return (
       <div className="min-w-0 space-y-6">
-        <ScanTheater
+        <ScanWorkspace
           result={liveResult}
           running={pipeline.phase === "running"}
           stepOrder={pipeline.stepOrder}
           stepStatus={pipeline.stepStatus}
-          modalityScores={pipeline.modalityScores}
           fetchInfo={pipeline.fetchInfo}
           textWordCount={pipeline.textWordCount}
           visionInfo={pipeline.visionInfo}
           error={pipeline.error}
         />
 
-        {pipeline.phase === "done" && (
-          <ScanResultView result={liveResult} hideFusionScene revealDelayMs={750} />
-        )}
-
         {pipeline.phase === "error" && (
           <EmptyState
             tone="danger"
-            title="Scan didn't complete"
-            description={pipeline.error ?? "Something went wrong before a verdict could be produced."}
+            title="Scan did not complete"
+            description={pipeline.error ?? "A critical error occurred before a multimodal verdict could be produced."}
             action={
               <button
                 onClick={() => navigate("/scan")}
-                className="rounded-lg bg-signal-scan px-4 py-2 text-sm font-semibold text-white"
+                className="rounded px-4 py-2 font-mono text-xs font-semibold bg-brand text-surface-canvas hover:opacity-90 transition-opacity"
               >
                 Start a new scan
               </button>
@@ -90,10 +83,13 @@ export default function ScanPage() {
   if (scanId && isLiveId(scanId)) {
     return (
       <EmptyState
-        title="This live scan session has ended"
-        description="Live scan progress isn't kept after a page refresh. Start a new scan, or find this scan in your history if it finished."
+        title="Live scan session closed"
+        description="Live scan state is not retained across page refreshes. Please start a new scan, or retrieve this result from the History tab."
         action={
-          <button onClick={() => navigate("/scan")} className="rounded-lg bg-signal-scan px-4 py-2 text-sm font-semibold text-white">
+          <button
+            onClick={() => navigate("/scan")}
+            className="rounded px-4 py-2 font-mono text-xs font-semibold bg-brand text-surface-canvas hover:opacity-90 transition-opacity"
+          >
             Start a new scan
           </button>
         }
@@ -101,15 +97,25 @@ export default function ScanPage() {
     );
   }
 
-  if (detail.loading) return <EmptyState title="Loading scan…" />;
+  if (detail.loading) {
+    return (
+      <div className="p-12 text-center font-mono text-xs text-mist-500">
+        Loading historical forensic audit #{scanId}…
+      </div>
+    );
+  }
+
   if (detail.error || !detail.data) {
     return (
       <EmptyState
         tone="danger"
-        title="Scan not found"
-        description={detail.error ?? `No scan with id ${scanId}.`}
+        title="Scan record not found"
+        description={detail.error ?? `No forensic scan found with id #${scanId}.`}
         action={
-          <button onClick={() => navigate("/history")} className="rounded-lg bg-signal-scan px-4 py-2 text-sm font-semibold text-white">
+          <button
+            onClick={() => navigate("/history")}
+            className="rounded px-4 py-2 font-mono text-xs font-semibold bg-brand text-surface-canvas hover:opacity-90 transition-opacity"
+          >
             Go to history
           </button>
         }
@@ -117,5 +123,10 @@ export default function ScanPage() {
     );
   }
 
-  return <ScanResultView result={unifiedFromDetail(detail.data)} />;
+  return (
+    <ScanWorkspace
+      result={unifiedFromDetail(detail.data)}
+      isHistorical={true}
+    />
+  );
 }

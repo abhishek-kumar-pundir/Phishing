@@ -252,6 +252,26 @@ export function ArrowUpRight({ className = "w-4 h-4", size = 16, ...props }: Gly
   );
 }
 
+export function ArrowLeft({ className = "w-4 h-4", size = 16, ...props }: GlyphProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...props}
+    >
+      <line x1="11.5" y1="8" x2="4.5" y2="8" />
+      <polyline points="8 4.5 4.5 8 8 11.5" />
+    </svg>
+  );
+}
+
 export function ChevronRight({ className = "w-4 h-4", size = 16, ...props }: GlyphProps) {
   return (
     <svg

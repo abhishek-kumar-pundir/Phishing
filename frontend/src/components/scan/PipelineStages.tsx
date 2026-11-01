@@ -1,6 +1,14 @@
+import React from "react";
 import { Modality } from "../../api/phish360";
 import { StepId, StepStatus, STEP_LABELS } from "../../hooks/usePipelineScan";
 import { pct } from "../../lib/format";
+import {
+  StatusDone,
+  StatusError,
+  StatusPending,
+  StatusRunning,
+  StatusSkipped,
+} from "../ui/Glyphs";
 
 interface Props {
   stepOrder: StepId[];
@@ -9,19 +17,31 @@ interface Props {
   fetchInfo: { statusCode: number; fetchDurationMs: number } | null;
   textWordCount: number | null;
   visionInfo: { backbone: string } | null;
+  totalDurationMs?: number | null;
   error: string | null;
   embedded?: boolean;
 }
 
-const MODALITY_OF: Partial<Record<StepId, Modality>> = { url: "url", html: "html", text: "text", vision: "vision" };
+const MODALITY_OF: Partial<Record<StepId, Modality>> = {
+  url: "url",
+  html: "html",
+  text: "text",
+  vision: "vision",
+};
 
-function StatusDot({ status }: { status: StepStatus }) {
-  if (status === "active")
-    return <span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-signal-scan opacity-60" /><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-signal-scan" /></span>;
-  if (status === "done") return <span className="inline-flex h-2.5 w-2.5 items-center justify-center rounded-full bg-signal-safe" />;
-  if (status === "skipped") return <span className="inline-flex h-2.5 w-2.5 rounded-full border border-mist-600 bg-transparent" />;
-  if (status === "error") return <span className="inline-flex h-2.5 w-2.5 rounded-full bg-signal-danger" />;
-  return <span className="inline-flex h-2.5 w-2.5 rounded-full border border-white/15 bg-transparent" />;
+function StageGlyph({ status }: { status: StepStatus }) {
+  switch (status) {
+    case "active":
+      return <StatusRunning size={18} className="text-brand animate-pulse" />;
+    case "done":
+      return <StatusDone size={18} className="text-verdict-legit" />;
+    case "skipped":
+      return <StatusSkipped size={18} className="text-mist-500" />;
+    case "error":
+      return <StatusError size={18} className="text-verdict-phish" />;
+    default:
+      return <StatusPending size={18} className="text-mist-600" />;
+  }
 }
 
 function summaryFor(
@@ -30,23 +50,28 @@ function summaryFor(
   modalityScores: Props["modalityScores"],
   fetchInfo: Props["fetchInfo"],
   textWordCount: number | null,
-  visionInfo: Props["visionInfo"]
+  visionInfo: Props["visionInfo"],
+  totalDurationMs?: number | null
 ): string {
-  if (status === "pending") return "Waiting";
-  if (status === "active") return "Running…";
+  if (status === "pending") return "Pending";
+  if (status === "active") return "Evaluating…";
   if (status === "skipped") return "Skipped";
   if (status === "error") return "Failed";
 
   const modality = MODALITY_OF[step];
   if (modality) {
     const score = modalityScores[modality];
-    return score != null ? `${pct(score, 0)} risk` : "No score";
+    return score != null ? `${pct(score, 1)} risk` : "No score";
   }
   if (step === "fetch") {
-    return fetchInfo ? `HTTP ${fetchInfo.statusCode} · ${(fetchInfo.fetchDurationMs / 1000).toFixed(1)}s` : "Fetched";
+    return fetchInfo
+      ? `HTTP ${fetchInfo.statusCode} · ${fetchInfo.fetchDurationMs}ms`
+      : "Fetched";
   }
-  if (step === "fusion") return "Verdict ready";
-  return "Done";
+  if (step === "fusion") {
+    return totalDurationMs != null ? `Fused in ${totalDurationMs}ms` : "Verdict ready";
+  }
+  return "Completed";
 }
 
 export function PipelineStages({
@@ -56,75 +81,76 @@ export function PipelineStages({
   fetchInfo,
   textWordCount,
   visionInfo,
+  totalDurationMs,
   error,
   embedded = false,
 }: Props) {
   return (
-    <div className={embedded ? "min-w-0" : "surface min-w-0 px-4 py-6 sm:px-6"}>
-      {!embedded && <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.07em] text-mist-500">Live investigation</p>}
-
-      {/* Mobile: vertical list */}
-      <div className="flex flex-col gap-0 lg:hidden">
-        {stepOrder.map((step, i) => {
-          const status = stepStatus[step] ?? "pending";
-          return (
-            <div key={step} className="flex gap-3">
-              <div className="flex flex-col items-center">
-                <StatusDot status={status} />
-                {i < stepOrder.length - 1 && (
-                  <span className={`mt-1 w-px flex-1 ${status === "done" ? "bg-signal-safe/40" : "bg-white/10"}`} style={{ minHeight: 28 }} />
-                )}
-              </div>
-              <div className="min-w-0 pb-5">
-                <p className={`text-sm font-medium ${status === "active" ? "text-mist-100" : "text-mist-200"}`}>
-                  {STEP_LABELS[step]}
-                </p>
-                <p className="text-xs text-mist-500">
-                  {summaryFor(step, status, modalityScores, fetchInfo, textWordCount, visionInfo)}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+    <div
+      className={
+        embedded
+          ? "min-w-0"
+          : "border border-surface-border bg-surface-card rounded-lg p-4 min-w-0 font-sans"
+      }
+    >
+      <div className="flex items-center justify-between mb-3 border-b border-surface-border pb-2">
+        <span className="font-mono text-[10px] text-mist-500 uppercase tracking-wider">
+          Stage Execution Timeline
+        </span>
+        {totalDurationMs != null && (
+          <span className="font-mono text-[11px] text-mist-400 tabular">
+            Total: {totalDurationMs}ms
+          </span>
+        )}
       </div>
 
-      {/* Desktop: horizontal pipeline */}
-      <div className="hidden min-w-0 items-start lg:flex">
-        {stepOrder.map((step, i) => {
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        {stepOrder.map((step) => {
           const status = stepStatus[step] ?? "pending";
+          const isActive = status === "active";
+          const isDone = status === "done";
+
           return (
-            <div key={step} className="flex min-w-0 flex-1 items-start">
-              <div className="flex min-w-0 flex-1 flex-col items-center text-center">
-                <div
-                  className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                    status === "active"
-                      ? "border-signal-scan bg-signal-scan/15"
-                      : status === "done"
-                      ? "border-signal-safe/50 bg-signal-safe/10"
-                      : status === "error"
-                      ? "border-signal-danger/50 bg-signal-danger/10"
-                      : "border-white/15 bg-white/[0.02]"
-                  }`}
-                >
-                  <StatusDot status={status} />
-                </div>
-                <p className={`mt-2.5 max-w-[9rem] truncate text-xs font-medium ${status === "active" ? "text-mist-100" : "text-mist-300"}`}>
+            <div
+              key={step}
+              className={`p-2.5 rounded border transition-colors flex flex-col justify-between ${
+                isActive
+                  ? "border-brand/40 bg-brand/5"
+                  : isDone
+                  ? "border-surface-border bg-surface-subtle/40"
+                  : "border-surface-border/50 bg-surface-canvas/40"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="font-mono text-[10px] uppercase text-mist-400 font-semibold tracking-wider">
+                  {step}
+                </span>
+                <StageGlyph status={status} />
+              </div>
+
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium text-mist-200 truncate">
                   {STEP_LABELS[step]}
                 </p>
-                <p className="mt-0.5 text-[11px] text-mist-500">
-                  {summaryFor(step, status, modalityScores, fetchInfo, textWordCount, visionInfo)}
+                <p className="text-[10px] font-mono text-mist-500 truncate mt-0.5 tabular">
+                  {summaryFor(
+                    step,
+                    status,
+                    modalityScores,
+                    fetchInfo,
+                    textWordCount,
+                    visionInfo,
+                    totalDurationMs
+                  )}
                 </p>
               </div>
-              {i < stepOrder.length - 1 && (
-                <div className={`mt-4 h-px flex-1 ${status === "done" ? "bg-signal-safe/40" : "bg-white/10"}`} />
-              )}
             </div>
           );
         })}
       </div>
 
       {error && (
-        <div className="mt-5 rounded-lg border border-signal-danger/30 bg-signal-danger/[0.06] px-4 py-3 text-sm text-signal-dangerSoft">
+        <div className="mt-3 border border-verdict-phish/40 bg-verdict-phish/10 rounded p-3 text-xs font-mono text-verdict-phish">
           {error}
         </div>
       )}

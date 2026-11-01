@@ -1,22 +1,33 @@
 import { Link, useParams } from "react-router-dom";
 import { useScanDetail } from "../hooks/useScanDetail";
 import { unifiedFromDetail } from "../lib/scanResult";
-import { ScanResultView } from "../components/scan/ScanResultView";
+import { ScanWorkspace } from "../components/scan/ScanWorkspace";
 import { EmptyState } from "../components/ui/EmptyState";
+import { ArrowLeft } from "../components/ui/Glyphs";
 
 export default function HistoryDetailPage() {
   const { scanId } = useParams<{ scanId: string }>();
   const detail = useScanDetail(scanId);
 
-  if (detail.loading) return <EmptyState title="Loading scan…" />;
+  if (detail.loading) {
+    return (
+      <div className="p-12 text-center font-mono text-xs text-mist-500">
+        Loading historical scan audit #{scanId}…
+      </div>
+    );
+  }
+
   if (detail.error || !detail.data) {
     return (
       <EmptyState
         tone="danger"
-        title="Scan not found"
-        description={detail.error ?? `No scan with id ${scanId}.`}
+        title="Scan record not found"
+        description={detail.error ?? `No scan record found with id #${scanId}.`}
         action={
-          <Link to="/history" className="rounded-lg bg-signal-scan px-4 py-2 text-sm font-semibold text-white">
+          <Link
+            to="/history"
+            className="rounded px-4 py-2 font-mono text-xs font-semibold bg-brand text-surface-canvas hover:opacity-90 transition-opacity"
+          >
             Back to history
           </Link>
         }
@@ -25,14 +36,15 @@ export default function HistoryDetailPage() {
   }
 
   return (
-    <div className="min-w-0 space-y-5">
-      <Link to="/history" className="inline-flex items-center gap-1.5 text-xs text-mist-400 hover:text-mist-100">
-        <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none">
-          <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+    <div className="min-w-0 space-y-4 font-sans">
+      <Link
+        to="/history"
+        className="inline-flex items-center gap-1.5 text-xs font-mono text-mist-400 hover:text-mist-100 transition-colors"
+      >
+        <ArrowLeft size={14} />
         Back to history
       </Link>
-      <ScanResultView result={unifiedFromDetail(detail.data)} />
+      <ScanWorkspace result={unifiedFromDetail(detail.data)} isHistorical={true} />
     </div>
   );
 }

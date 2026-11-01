@@ -7,11 +7,26 @@ interface Props {
 }
 
 type AdvancedMode = "fetch" | "paste-html" | "upload-html" | "url-only";
+type OperatingPoint = "balanced" | "high_recall" | "high_precision" | "default";
+
+const OPERATING_POINTS: {
+  id: OperatingPoint;
+  label: string;
+  threshold: number;
+  low?: number;
+  high?: number;
+}[] = [
+  { id: "balanced", label: "Balanced (0.45)", threshold: 0.45, low: 0.35, high: 0.55 },
+  { id: "high_recall", label: "High Recall (0.20)", threshold: 0.2, low: 0.15, high: 0.3 },
+  { id: "high_precision", label: "High Precision (0.90)", threshold: 0.9, low: 0.7, high: 0.9 },
+  { id: "default", label: "Default (0.50)", threshold: 0.5 },
+];
 
 export function UrlForm({ onSubmit, busy }: Props) {
   const [url, setUrl] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [mode, setMode] = useState<AdvancedMode>("fetch");
+  const [operatingPoint, setOperatingPoint] = useState<OperatingPoint>("balanced");
   const [pastedHtml, setPastedHtml] = useState("");
   const [uploadedHtml, setUploadedHtml] = useState<{ name: string; content: string } | null>(null);
   const [screenshot, setScreenshot] = useState<File | null>(null);
@@ -33,7 +48,16 @@ export function UrlForm({ onSubmit, busy }: Props) {
     const trimmed = url.trim();
     const normalizedUrl = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 
-    const base: PredictRequestInput = { url: normalizedUrl, allowFetch: false };
+    const opConfig = OPERATING_POINTS.find((op) => op.id === operatingPoint);
+
+    const base: PredictRequestInput = {
+      url: normalizedUrl,
+      allowFetch: false,
+      threshold: opConfig?.threshold,
+      reviewBandLow: opConfig?.low,
+      reviewBandHigh: opConfig?.high,
+      operatingPoint: opConfig?.id,
+    };
 
     if (mode === "fetch") {
       base.allowFetch = true;
@@ -42,7 +66,7 @@ export function UrlForm({ onSubmit, busy }: Props) {
     } else if (mode === "upload-html" && uploadedHtml) {
       base.html = uploadedHtml.content;
     }
-    // "url-only" leaves allowFetch false and html undefined -- URL model only.
+    // "url-only" leaves allowFetch false and html undefined
 
     if (screenshot) base.screenshot = screenshot;
 
@@ -50,160 +74,161 @@ export function UrlForm({ onSubmit, busy }: Props) {
   };
 
   return (
-    <form onSubmit={submit} className="min-w-0">
-      <div className="surface relative overflow-hidden px-5 py-8 sm:px-10 sm:py-12">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 faint-grid-bg" />
-
-        <div className="relative mx-auto max-w-xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-signal-scan/25 bg-signal-scan/[0.08] px-3 py-1 text-[11px] font-medium text-signal-scanSoft">
-            <span className="h-1.5 w-1.5 rounded-full bg-signal-scan" />
-            Multimodal phishing detection
-          </span>
-          <h1 className="mt-4 font-display text-2xl font-semibold text-mist-100 sm:text-3xl">
-            Investigate a website
-          </h1>
-          <p className="mx-auto mt-2 max-w-md text-sm text-mist-400">
-            Four independent AI models analyze the URL, the page's HTML, its visible text, and how it looks —
-            then a fusion model combines the evidence into one verdict.
-          </p>
-
-          <div className="mt-7 flex flex-col gap-2.5 sm:flex-row">
-            <input
-              type="text"
-              inputMode="url"
-              autoFocus
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com"
-              className="min-w-0 flex-1 rounded-xl border border-white/10 bg-ink-950/60 px-4 py-3 text-sm text-mist-100 placeholder:text-mist-600 outline-none focus:border-signal-scan/50 focus:ring-2 focus:ring-signal-scan/20"
-            />
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="shrink-0 rounded-xl bg-signal-scan px-5 py-3 text-sm font-semibold text-white shadow-glow transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {busy ? "Analyzing…" : "Analyze website"}
-            </button>
+    <form onSubmit={submit} className="border border-surface-border bg-surface-card rounded-lg p-5 font-sans min-w-0">
+      <div className="flex flex-col gap-4">
+        {/* Header Title */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-mono text-xs font-semibold uppercase tracking-wider text-mist-100">
+              Multimodal Website Investigation
+            </h2>
+            <p className="text-[11px] text-mist-400 mt-0.5">
+              Calibrated inference across URL, DOM, text, and visual modalities with TreeSHAP attribution.
+            </p>
           </div>
 
-          <div className="mt-5 flex items-center justify-center gap-3 text-[11px] text-mist-500">
-            <span>URL</span>
-            <Dot />
-            <span>HTML</span>
-            <Dot />
-            <span>Text</span>
-            <Dot />
-            <span>Vision</span>
+          {/* Operating Point Selector Badge */}
+          <div className="flex items-center gap-1.5 font-mono text-[11px]">
+            <span className="text-mist-500 uppercase text-[10px]">Operating Point:</span>
+            <select
+              value={operatingPoint}
+              onChange={(e) => setOperatingPoint(e.target.value as OperatingPoint)}
+              className="bg-surface-subtle border border-surface-border rounded px-2 py-1 text-mist-200 outline-none focus:border-brand"
+            >
+              {OPERATING_POINTS.map((op) => (
+                <option key={op.id} value={op.id}>
+                  {op.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
-      </div>
 
-      <div className="mt-3">
-        <button
-          type="button"
-          onClick={() => setShowAdvanced((v) => !v)}
-          className="flex w-full items-center justify-between rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-sm text-mist-300 transition-colors hover:bg-white/[0.04]"
-        >
-          <span className="font-medium">Advanced options</span>
-          <svg
-            viewBox="0 0 16 16"
-            className={`h-4 w-4 text-mist-500 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
-            fill="none"
+        {/* Input & Action Bar */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            inputMode="url"
+            autoFocus
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="Enter target URL (e.g. https://account-verification-portal.com)"
+            className="flex-1 bg-surface-canvas border border-surface-border rounded px-3 py-2 text-xs font-mono text-mist-100 placeholder:text-mist-600 outline-none focus:border-brand/60"
+          />
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            className="px-4 py-2 rounded bg-brand text-surface-canvas text-xs font-semibold font-mono hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity shrink-0"
           >
-            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+            {busy ? "INVESTIGATING…" : "START SCAN"}
+          </button>
+        </div>
 
-        {showAdvanced && (
-          <div className="animate-fadeIn surface mt-2 space-y-4 px-4 py-4 sm:px-5">
-            <div>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.07em] text-mist-500">Ingestion mode</p>
-              <div className="flex flex-wrap gap-1.5">
-                {(
-                  [
-                    ["fetch", "Fetch live page"],
-                    ["paste-html", "Paste HTML"],
-                    ["upload-html", "Upload HTML"],
-                    ["url-only", "URL only"],
-                  ] as [AdvancedMode, string][]
-                ).map(([m, label]) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setMode(m)}
-                    className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
-                      mode === m
-                        ? "border-signal-scan/40 bg-signal-scan/12 text-mist-100"
-                        : "border-white/10 text-mist-400 hover:text-mist-200"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-2 text-[11px] text-mist-500">
-                {mode === "fetch" && "The backend safely fetches the page server-side (SSRF-guarded) so HTML/DOM and text models can run."}
-                {mode === "paste-html" && "Paste raw HTML directly — nothing is fetched over the network."}
-                {mode === "upload-html" && "Upload a saved .html file — nothing is fetched over the network."}
-                {mode === "url-only" && "Only the URL model runs. Fastest, but skips HTML, text and vision."}
-              </p>
-            </div>
+        {/* Advanced Options Toggle */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowAdvanced((v) => !v)}
+            className="text-[11px] font-mono text-mist-400 hover:text-mist-200 flex items-center gap-1.5 transition-colors"
+          >
+            <span>{showAdvanced ? "[-] Hide Ingestion Options" : "[+] Advanced Ingestion & Screenshot"}</span>
+          </button>
 
-            {mode === "paste-html" && (
-              <textarea
-                value={pastedHtml}
-                onChange={(e) => setPastedHtml(e.target.value)}
-                placeholder="<html>…</html>"
-                rows={5}
-                className="w-full min-w-0 resize-y rounded-lg border border-white/10 bg-ink-950/60 px-3 py-2 font-mono text-xs text-mist-100 outline-none focus:border-signal-scan/40"
-              />
-            )}
-
-            {mode === "upload-html" && (
+          {showAdvanced && (
+            <div className="mt-3 pt-3 border-t border-surface-border space-y-3 font-mono text-xs">
               <div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".html,.htm,text/html"
-                  className="hidden"
-                  onChange={(e) => handleHtmlFile(e.target.files?.[0])}
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="rounded-lg border border-dashed border-white/15 px-4 py-3 text-xs text-mist-400 hover:border-white/30"
-                >
-                  {uploadedHtml ? `Loaded: ${uploadedHtml.name}` : "Choose an .html file"}
-                </button>
+                <span className="text-[10px] text-mist-500 uppercase block mb-1.5">
+                  Ingestion Mode
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    [
+                      ["fetch", "Fetch Live Page"],
+                      ["paste-html", "Paste HTML"],
+                      ["upload-html", "Upload HTML File"],
+                      ["url-only", "URL Model Only"],
+                    ] as [AdvancedMode, string][]
+                  ).map(([m, label]) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setMode(m)}
+                      className={`px-2.5 py-1 rounded text-[11px] border transition-colors ${
+                        mode === m
+                          ? "border-brand text-brand bg-brand/5"
+                          : "border-surface-border text-mist-400 hover:text-mist-200 bg-surface-subtle"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            )}
 
-            <div className="min-w-0 border-t border-white/[0.06] pt-4">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.07em] text-mist-500">
-                Screenshot (optional — enables the vision model)
-              </p>
-              <input
-                ref={screenshotInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => setScreenshot(e.target.files?.[0] ?? null)}
-              />
-              <button
-                type="button"
-                onClick={() => screenshotInputRef.current?.click()}
-                className="rounded-lg border border-dashed border-white/15 px-4 py-3 text-xs text-mist-400 hover:border-white/30"
-              >
-                {screenshot ? `Loaded: ${screenshot.name}` : "Upload a screenshot"}
-              </button>
+              {mode === "paste-html" && (
+                <textarea
+                  value={pastedHtml}
+                  onChange={(e) => setPastedHtml(e.target.value)}
+                  placeholder="Paste raw HTML markup here (<html>...</html>)"
+                  rows={4}
+                  className="w-full bg-surface-canvas border border-surface-border rounded p-2 text-xs font-mono text-mist-100 outline-none focus:border-brand"
+                />
+              )}
+
+              {mode === "upload-html" && (
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".html,.htm,text/html"
+                    className="hidden"
+                    onChange={(e) => handleHtmlFile(e.target.files?.[0])}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-3 py-1.5 border border-dashed border-surface-border rounded text-[11px] text-mist-300 hover:border-mist-400"
+                  >
+                    {uploadedHtml ? `Loaded: ${uploadedHtml.name}` : "Select .html file"}
+                  </button>
+                </div>
+              )}
+
+              {/* Optional Screenshot */}
+              <div className="border-t border-surface-border pt-2 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-mist-500 uppercase block">
+                    Upload Screenshot (Enables ResNet-18 Vision Model)
+                  </span>
+                  <input
+                    ref={screenshotInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => setScreenshot(e.target.files?.[0] ?? null)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => screenshotInputRef.current?.click()}
+                    className="mt-1 px-3 py-1.5 border border-dashed border-surface-border rounded text-[11px] text-mist-300 hover:border-mist-400"
+                  >
+                    {screenshot ? `Screenshot: ${screenshot.name}` : "Select Image (.png/.jpg)"}
+                  </button>
+                </div>
+                {screenshot && (
+                  <button
+                    type="button"
+                    onClick={() => setScreenshot(null)}
+                    className="text-[10px] text-verdict-phish hover:underline"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </form>
   );
-}
-
-function Dot() {
-  return <span className="h-1 w-1 rounded-full bg-mist-600" />;
 }
