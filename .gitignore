@@ -54,6 +54,12 @@ artifacts/scan_screenshots/*
 !**/artifacts/scan_screenshots/.gitkeep
 !artifacts/scan_screenshots/.gitkeep
 
+# Domain shift screenshots and extension captures
+**/artifacts/domain_shift_screenshots/*
+artifacts/domain_shift_screenshots/*
+**/artifacts/real_extension_captures/*.png
+artifacts/real_extension_captures/*.png
+
 # ==============================================================================
 # 3. Frontend & Vercel Deployment (frontend/)
 # ==============================================================================

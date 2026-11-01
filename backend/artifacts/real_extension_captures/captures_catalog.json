@@ -1,0 +1,42 @@
+[
+  {
+    "url": "https://en.wikipedia.org/wiki/Computer_security",
+    "label": "legitimate",
+    "file": "wikipedia_live.png",
+    "vision_score": 0.1433,
+    "notes": "Live online render via Playwright approximating clean Chrome viewport",
+    "timestamp": "2026-11-01T13:59:35Z"
+  },
+  {
+    "url": "https://github.com",
+    "label": "legitimate",
+    "file": "github_live.png",
+    "vision_score": 0.6433,
+    "notes": "Live online render via Playwright approximating clean Chrome viewport",
+    "timestamp": "2026-11-01T13:59:37Z"
+  },
+  {
+    "url": "https://www.python.org",
+    "label": "legitimate",
+    "file": "python_org_live.png",
+    "vision_score": 0.18,
+    "notes": "Live online render via Playwright approximating clean Chrome viewport",
+    "timestamp": "2026-11-01T13:59:39Z"
+  },
+  {
+    "url": "https://www.mozilla.org",
+    "label": "legitimate",
+    "file": "mozilla_live.png",
+    "vision_score": 0.3733,
+    "notes": "Live online render via Playwright approximating clean Chrome viewport",
+    "timestamp": "2026-11-01T13:59:41Z"
+  },
+  {
+    "url": "https://stackoverflow.com",
+    "label": "legitimate",
+    "file": "stack_overflow_live.png",
+    "vision_score": 0.7367,
+    "notes": "Live online render via Playwright approximating clean Chrome viewport",
+    "timestamp": "2026-11-01T13:59:43Z"
+  }
+]

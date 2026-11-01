@@ -708,6 +708,15 @@ async def model_info():
         except Exception:
             pass
 
+    domain_shift_data = None
+    ds_json = METRICS_DIR / "domain_shift.json"
+    if ds_json.exists():
+        try:
+            with ds_json.open(encoding="utf-8") as f:
+                domain_shift_data = json.load(f)
+        except Exception:
+            pass
+
     return {
         "standalone_metrics": standalone,   # per modality: accuracy/precision/recall/f1/roc_auc/pr_auc/confusion_matrix/classification_report
         "ablation": ablation,                # per ablation tag: same shape, from fusion_<tag>_test.json + recomputed pr_auc
@@ -718,6 +727,7 @@ async def model_info():
         "operating_points": operating_points,
         "calibration": calibration_summary,
         "global_feature_importance": get_global_feature_importance(),
+        "domain_shift": domain_shift_data,
     }
 
 

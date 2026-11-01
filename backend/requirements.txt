@@ -7,6 +7,7 @@ Pillow
 beautifulsoup4
 lxml
 shap
+playwright
 
 # API
 fastapi
