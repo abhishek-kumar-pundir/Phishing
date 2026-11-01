@@ -63,7 +63,8 @@ CREATE TABLE IF NOT EXISTS scans (
     needs_review INTEGER,
     review_band_low REAL,
     review_band_high REAL,
-    operating_point TEXT
+    operating_point TEXT,
+    explanations TEXT
 );
 """
 
@@ -92,6 +93,7 @@ _MIGRATION_COLUMNS: list[tuple[str, str]] = [
     ("review_band_low", "REAL"),
     ("review_band_high", "REAL"),
     ("operating_point", "TEXT"),
+    ("explanations", "TEXT"),
 ]
 
 
@@ -149,6 +151,7 @@ def log_scan(
     review_band_low: Optional[float] = None,
     review_band_high: Optional[float] = None,
     operating_point: Optional[str] = None,
+    explanations: Optional[dict] = None,
 ) -> Optional[int]:
     """Called once per completed /predict or /predict/stream request, after
     fusion. Never raises -- a logging failure should never break a scan.
@@ -163,8 +166,9 @@ def log_scan(
                     fused_probability, predicted_label, fusion_strategy, threshold, scan_duration_ms,
                     modality_skip_reasons, url_features, html_features, html_preview, html_length,
                     text_preview, text_length, word_count, vision_embedding_dim, vision_backbone,
-                    screenshot_path, needs_review, review_band_low, review_band_high, operating_point)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    screenshot_path, needs_review, review_band_low, review_band_high, operating_point,
+                    explanations)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     datetime.now(timezone.utc).isoformat(),
                     request_id,
@@ -197,6 +201,7 @@ def log_scan(
                     review_band_low,
                     review_band_high,
                     operating_point,
+                    _json_or_none(explanations),
                 ),
             )
             return cur.lastrowid
@@ -220,7 +225,7 @@ def get_scan(scan_id: int) -> Optional[dict]:
         if row is None:
             return None
         d = dict(row)
-        for key in ("modality_skip_reasons", "url_features", "html_features"):
+        for key in ("modality_skip_reasons", "url_features", "html_features", "explanations"):
             raw = d.get(key)
             d[key] = json.loads(raw) if raw else None
         return d

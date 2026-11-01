@@ -6,6 +6,7 @@ joblib
 Pillow
 beautifulsoup4
 lxml
+shap
 
 # API
 fastapi

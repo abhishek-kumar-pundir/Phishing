@@ -41,7 +41,7 @@ import json
 import time
 import uuid
 from pathlib import Path
-from typing import Optional
+from typing import Optional,Any
 
 import joblib
 import numpy as np
@@ -65,6 +65,7 @@ from src.config import (
     DEFAULT_REVIEW_BAND_HIGH,
     OPERATING_POINTS_CONFIG,
 )
+from src.explainability import compute_all_explanations, get_global_feature_importance
 
 MODELS_DIR = Path("models")
 METRICS_DIR = Path("artifacts/metrics")
@@ -290,6 +291,7 @@ async def predict(
     url_features = extract_url_features(url)
     html_features = extract_html_features(html, url) if html else None
     visible_text = extract_visible_text(html) if html else None
+    explanations = compute_all_explanations(url, html, url_features, html_features)
 
     scan_id = log_scan(
         url=url, scores=scores, fused_probability=fused_prob,
@@ -308,6 +310,7 @@ async def predict(
         review_band_low=eff_low,
         review_band_high=eff_high,
         operating_point=eff_op,
+        explanations=explanations,
     )
 
     return {
@@ -328,6 +331,7 @@ async def predict(
             "url_features": url_features,
             "html_features": html_features,
         },
+        "explanations": explanations,
     }
 
 
@@ -480,6 +484,8 @@ async def predict_stream(
             needs_review = bool(eff_low <= fused_prob <= eff_high)
             review_band_dict = {"low": eff_low, "high": eff_high}
 
+        explanations = compute_all_explanations(url, nonlocal_html, url_features, html_features)
+
         scan_id = log_scan(
             url=url, scores=scores, fused_probability=fused_prob,
             predicted_label=predicted_label, fusion_strategy=fusion_tag, fetched_from=fetched_from,
@@ -495,6 +501,7 @@ async def predict_stream(
             review_band_low=eff_low,
             review_band_high=eff_high,
             operating_point=eff_op,
+            explanations=explanations,
         )
 
         yield _sse({
@@ -511,7 +518,7 @@ async def predict_stream(
             "fetched_from": fetched_from,
             "scan_duration_ms": duration_ms,
         })
-        yield _sse({"stage": "done"})
+        yield _sse({"stage": "done", "explanations": explanations})
 
     return StreamingResponse(
         event_generator(),
@@ -592,6 +599,7 @@ def _scan_record_to_detail(row: dict) -> dict:
             ),
             "screenshot_url": f"/scans/{row['id']}/screenshot" if has_screenshot else None,
         },
+        "explanations": row.get("explanations"),
     }
 
 
@@ -709,6 +717,7 @@ async def model_info():
         "threshold": THRESHOLD,
         "operating_points": operating_points,
         "calibration": calibration_summary,
+        "global_feature_importance": get_global_feature_importance(),
     }
 
 
