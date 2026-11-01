@@ -59,7 +59,11 @@ CREATE TABLE IF NOT EXISTS scans (
     word_count INTEGER,
     vision_embedding_dim INTEGER,
     vision_backbone TEXT,
-    screenshot_path TEXT
+    screenshot_path TEXT,
+    needs_review INTEGER,
+    review_band_low REAL,
+    review_band_high REAL,
+    operating_point TEXT
 );
 """
 
@@ -84,6 +88,10 @@ _MIGRATION_COLUMNS: list[tuple[str, str]] = [
     ("vision_embedding_dim", "INTEGER"),
     ("vision_backbone", "TEXT"),
     ("screenshot_path", "TEXT"),
+    ("needs_review", "INTEGER"),
+    ("review_band_low", "REAL"),
+    ("review_band_high", "REAL"),
+    ("operating_point", "TEXT"),
 ]
 
 
@@ -137,6 +145,10 @@ def log_scan(
     vision_embedding_dim: Optional[int] = None,
     vision_backbone: Optional[str] = None,
     screenshot_path: Optional[str] = None,
+    needs_review: Optional[bool] = None,
+    review_band_low: Optional[float] = None,
+    review_band_high: Optional[float] = None,
+    operating_point: Optional[str] = None,
 ) -> Optional[int]:
     """Called once per completed /predict or /predict/stream request, after
     fusion. Never raises -- a logging failure should never break a scan.
@@ -151,8 +163,8 @@ def log_scan(
                     fused_probability, predicted_label, fusion_strategy, threshold, scan_duration_ms,
                     modality_skip_reasons, url_features, html_features, html_preview, html_length,
                     text_preview, text_length, word_count, vision_embedding_dim, vision_backbone,
-                    screenshot_path)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    screenshot_path, needs_review, review_band_low, review_band_high, operating_point)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     datetime.now(timezone.utc).isoformat(),
                     request_id,
@@ -181,6 +193,10 @@ def log_scan(
                     vision_embedding_dim,
                     vision_backbone,
                     screenshot_path,
+                    int(needs_review) if needs_review is not None else None,
+                    review_band_low,
+                    review_band_high,
+                    operating_point,
                 ),
             )
             return cur.lastrowid

@@ -59,13 +59,61 @@ from src.features_vision import extract_vision_features, vision_embedding_dim, H
 from api.safe_fetch import safe_fetch_html, UnsafeUrlError
 from api.db import init_db, log_scan, recent_scans, stats, get_scan
 from api.fusion_eval import ALL_MODALITIES, standalone_pr_auc, fusion_pr_auc, compute_fused_predictions
+from src.config import (
+    DEFAULT_THRESHOLD,
+    DEFAULT_REVIEW_BAND_LOW,
+    DEFAULT_REVIEW_BAND_HIGH,
+    OPERATING_POINTS_CONFIG,
+)
 
 MODELS_DIR = Path("models")
 METRICS_DIR = Path("artifacts/metrics")
 SCREENSHOTS_DIR = Path("artifacts/scan_screenshots")
 SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
 
-THRESHOLD = 0.5  # fixed decision threshold used everywhere below -- surfaced to the frontend, not hidden
+THRESHOLD = DEFAULT_THRESHOLD  # default decision boundary (0.5) -- configurable via env, op point or request
+
+
+def _clean_param(v: Any, default: Any = None) -> Any:
+    # If called directly as a function rather than through FastAPI's router, Form/File instances may be passed as defaults
+    if v is None or hasattr(v, "default"):
+        return default
+    return v
+
+
+def resolve_operating_threshold(
+    threshold: Any = None,
+    review_band_low: Any = None,
+    review_band_high: Any = None,
+    operating_point: Any = None,
+) -> tuple[float, Optional[float], Optional[float], Optional[str]]:
+    threshold = _clean_param(threshold)
+    review_band_low = _clean_param(review_band_low)
+    review_band_high = _clean_param(review_band_high)
+    operating_point = _clean_param(operating_point)
+
+    eff_thresh = DEFAULT_THRESHOLD
+    eff_low = DEFAULT_REVIEW_BAND_LOW if DEFAULT_REVIEW_BAND_LOW >= 0 else None
+    eff_high = DEFAULT_REVIEW_BAND_HIGH if DEFAULT_REVIEW_BAND_HIGH >= 0 else None
+    eff_op = None
+
+    if operating_point and str(operating_point).lower() in OPERATING_POINTS_CONFIG:
+        eff_op = str(operating_point).lower()
+        cfg = OPERATING_POINTS_CONFIG[eff_op]
+        eff_thresh = cfg["threshold"]
+        if cfg["review_band"]:
+            eff_low = cfg["review_band"]["low"]
+            eff_high = cfg["review_band"]["high"]
+
+    if threshold is not None:
+        eff_thresh = float(threshold)
+
+    if review_band_low is not None:
+        eff_low = float(review_band_low)
+    if review_band_high is not None:
+        eff_high = float(review_band_high)
+
+    return eff_thresh, eff_low, eff_high, eff_op
 
 app = FastAPI(title="Phish360 Multimodal Phishing Detector")
 
@@ -88,7 +136,10 @@ def _load(name: str):
         path = MODELS_DIR / f"{name}.joblib"
         if not path.exists():
             return None
-        _loaded[name] = joblib.load(path)
+        obj = joblib.load(path)
+        if isinstance(obj, dict) and "model" in obj and hasattr(obj["model"], "n_jobs"):
+            obj["model"].n_jobs = 1
+        _loaded[name] = obj
     return _loaded[name]
 
 
@@ -177,9 +228,20 @@ async def predict(
     html: Optional[str] = Form(None),
     allow_fetch: bool = Form(False),
     screenshot: Optional[UploadFile] = File(None),
+    threshold: Optional[float] = Form(None),
+    review_band_low: Optional[float] = Form(None),
+    review_band_high: Optional[float] = Form(None),
+    operating_point: Optional[str] = Form(None),
 ):
     request_id = str(uuid.uuid4())
     start_time = time.perf_counter()
+
+    eff_thresh, eff_low, eff_high, eff_op = resolve_operating_threshold(
+        threshold, review_band_low, review_band_high, operating_point
+    )
+    html = _clean_param(html, None)
+    allow_fetch = bool(_clean_param(allow_fetch, False))
+    screenshot = _clean_param(screenshot, None)
 
     fetched_from = None
     status_code = None
@@ -207,7 +269,7 @@ async def predict(
     }
 
     screenshot_path = None
-    if screenshot is not None:
+    if screenshot is not None and hasattr(screenshot, "read"):
         data = await screenshot.read()
         screenshot_path = _save_screenshot(data, request_id)
         scores["vision"] = _score_vision(screenshot_path)
@@ -216,8 +278,14 @@ async def predict(
     if fused_prob is None:
         raise HTTPException(status_code=503, detail="No trained models available on the server.")
 
-    predicted_label = "phishing" if fused_prob >= THRESHOLD else "legitimate"
+    predicted_label = "phishing" if fused_prob >= eff_thresh else "legitimate"
     duration_ms = round((time.perf_counter() - start_time) * 1000, 1)
+
+    needs_review = False
+    review_band_dict = None
+    if eff_low is not None and eff_high is not None and eff_low <= eff_high:
+        needs_review = bool(eff_low <= fused_prob <= eff_high)
+        review_band_dict = {"low": eff_low, "high": eff_high}
 
     url_features = extract_url_features(url)
     html_features = extract_html_features(html, url) if html else None
@@ -226,7 +294,7 @@ async def predict(
     scan_id = log_scan(
         url=url, scores=scores, fused_probability=fused_prob,
         predicted_label=predicted_label, fusion_strategy=fusion_tag, fetched_from=fetched_from,
-        request_id=request_id, threshold=THRESHOLD, scan_duration_ms=duration_ms,
+        request_id=request_id, threshold=eff_thresh, scan_duration_ms=duration_ms,
         url_features=url_features, html_features=html_features,
         html_preview=html[:5000] if html else None, html_length=len(html) if html else None,
         status_code=status_code, page_title=page_title, fetch_duration_ms=fetch_duration_ms,
@@ -236,6 +304,10 @@ async def predict(
         vision_embedding_dim=vision_embedding_dim() if screenshot_path else None,
         vision_backbone=("resnet18" if HAVE_TORCH else "fallback_histogram") if screenshot_path else None,
         screenshot_path=screenshot_path,
+        needs_review=needs_review,
+        review_band_low=eff_low,
+        review_band_high=eff_high,
+        operating_point=eff_op,
     )
 
     return {
@@ -245,7 +317,10 @@ async def predict(
         "fetched_from": fetched_from,
         "phishing_probability": round(fused_prob, 4),
         "predicted_label": predicted_label,
-        "threshold": THRESHOLD,
+        "threshold": eff_thresh,
+        "operating_point": eff_op,
+        "needs_review": needs_review,
+        "review_band": review_band_dict,
         "fusion_strategy": fusion_tag,
         "scan_duration_ms": duration_ms,
         "per_modality_scores": {k: (round(v, 4) if v is not None else None) for k, v in scores.items()},
@@ -274,6 +349,10 @@ async def predict_stream(
     html: Optional[str] = Form(None),
     allow_fetch: bool = Form(False),
     screenshot: Optional[UploadFile] = File(None),
+    threshold: Optional[float] = Form(None),
+    review_band_low: Optional[float] = Form(None),
+    review_band_high: Optional[float] = Form(None),
+    operating_point: Optional[str] = Form(None),
 ):
     """Same inputs and same underlying models as /predict, but emits one
     SSE event per modality AS IT FINISHES, then a final 'fusion' event.
@@ -282,7 +361,14 @@ async def predict_stream(
 
     request_id = str(uuid.uuid4())
     start_time = time.perf_counter()
-    screenshot_bytes = await screenshot.read() if screenshot is not None else None
+    screenshot_bytes = await screenshot.read() if screenshot is not None and hasattr(screenshot, "read") else None
+
+    eff_thresh, eff_low, eff_high, eff_op = resolve_operating_threshold(
+        threshold, review_band_low, review_band_high, operating_point
+    )
+    html = _clean_param(html, None)
+    allow_fetch = bool(_clean_param(allow_fetch, False))
+    screenshot = _clean_param(screenshot, None)
 
     async def event_generator():
         fetched_from = None
@@ -384,14 +470,20 @@ async def predict_stream(
         # --- STEP 6: fusion ---
         fused_prob, fusion_tag = _fuse(scores)
         predicted_label = (
-            ("phishing" if (fused_prob or 0) >= THRESHOLD else "legitimate") if fused_prob is not None else None
+            ("phishing" if (fused_prob or 0) >= eff_thresh else "legitimate") if fused_prob is not None else None
         )
         duration_ms = round((time.perf_counter() - start_time) * 1000, 1)
+
+        needs_review = False
+        review_band_dict = None
+        if fused_prob is not None and eff_low is not None and eff_high is not None and eff_low <= eff_high:
+            needs_review = bool(eff_low <= fused_prob <= eff_high)
+            review_band_dict = {"low": eff_low, "high": eff_high}
 
         scan_id = log_scan(
             url=url, scores=scores, fused_probability=fused_prob,
             predicted_label=predicted_label, fusion_strategy=fusion_tag, fetched_from=fetched_from,
-            request_id=request_id, threshold=THRESHOLD, scan_duration_ms=duration_ms,
+            request_id=request_id, threshold=eff_thresh, scan_duration_ms=duration_ms,
             modality_skip_reasons=skip_reasons or None,
             url_features=url_features, html_features=html_features,
             html_preview=html_preview, html_length=html_length,
@@ -399,6 +491,10 @@ async def predict_stream(
             text_preview=text_preview, text_length=text_length, word_count=word_count,
             vision_embedding_dim=vis_embedding_dim, vision_backbone=vis_backbone,
             screenshot_path=screenshot_path,
+            needs_review=needs_review,
+            review_band_low=eff_low,
+            review_band_high=eff_high,
+            operating_point=eff_op,
         )
 
         yield _sse({
@@ -407,7 +503,10 @@ async def predict_stream(
             "scan_id": scan_id,
             "phishing_probability": round(fused_prob, 4) if fused_prob is not None else None,
             "predicted_label": predicted_label,
-            "threshold": THRESHOLD,
+            "threshold": eff_thresh,
+            "operating_point": eff_op,
+            "needs_review": needs_review,
+            "review_band": review_band_dict,
             "fusion_strategy": fusion_tag,
             "fetched_from": fetched_from,
             "scan_duration_ms": duration_ms,
@@ -461,6 +560,13 @@ def _scan_record_to_detail(row: dict) -> dict:
         "predicted_label": row.get("predicted_label"),
         "fusion_strategy": row.get("fusion_strategy"),
         "threshold": row.get("threshold"),
+        "operating_point": row.get("operating_point"),
+        "needs_review": bool(row["needs_review"]) if row.get("needs_review") is not None else False,
+        "review_band": (
+            {"low": row["review_band_low"], "high": row["review_band_high"]}
+            if row.get("review_band_low") is not None and row.get("review_band_low") >= 0
+            else None
+        ),
         "scan_duration_ms": row.get("scan_duration_ms"),
         "evidence": {
             "url_features": row.get("url_features"),
@@ -582,6 +688,18 @@ async def model_info():
         coefficients = {mod: round(float(c), 4) for mod, c in zip(fusion["modalities"], coefs)}
         intercept = round(float(fusion["model"].intercept_[0]), 4)
 
+    operating_points = None
+    calibration_summary = None
+    thresh_json = METRICS_DIR / "threshold_analysis.json"
+    if thresh_json.exists():
+        try:
+            with thresh_json.open(encoding="utf-8") as f:
+                t_data = json.load(f)
+                operating_points = t_data.get("operating_points")
+                calibration_summary = t_data.get("calibration")
+        except Exception:
+            pass
+
     return {
         "standalone_metrics": standalone,   # per modality: accuracy/precision/recall/f1/roc_auc/pr_auc/confusion_matrix/classification_report
         "ablation": ablation,                # per ablation tag: same shape, from fusion_<tag>_test.json + recomputed pr_auc
@@ -589,7 +707,23 @@ async def model_info():
         "fusion_logreg_coefficients": coefficients,
         "fusion_logreg_intercept": intercept,
         "threshold": THRESHOLD,
+        "operating_points": operating_points,
+        "calibration": calibration_summary,
     }
+
+
+@app.get("/threshold-analysis")
+async def get_threshold_analysis():
+    """Returns the precision/recall/FPR table across 0.05 threshold steps,
+    PR and ROC curve coordinates for validation and test splits, calibration
+    metrics (Brier score, ECE, reliability bins), and the three named operating
+    points ('balanced', 'high_recall', 'high_precision') justified on validation data."""
+    path = METRICS_DIR / "threshold_analysis.json"
+    if not path.exists():
+        from src.calibration import run_threshold_and_calibration_analysis
+        return run_threshold_and_calibration_analysis()
+    with path.open(encoding="utf-8") as f:
+        return json.load(f)
 
 
 @app.get("/error-analysis")

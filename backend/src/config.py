@@ -1,6 +1,7 @@
 """
 config.py -- shared paths and small helpers used across training scripts.
 """
+import os
 from pathlib import Path
 
 ARTIFACTS_DIR = Path("artifacts")
@@ -11,6 +12,20 @@ MODELS_DIR = Path("models")
 
 RANDOM_SEED = 42
 VAL_SIZE = 0.15  # fraction of trainval held out as validation
+
+# Configurable thresholds & review band
+DEFAULT_THRESHOLD = float(os.getenv("PHISH360_THRESHOLD", "0.5"))
+DEFAULT_REVIEW_BAND_LOW = float(os.getenv("PHISH360_REVIEW_BAND_LOW", "-1.0"))
+DEFAULT_REVIEW_BAND_HIGH = float(os.getenv("PHISH360_REVIEW_BAND_HIGH", "-1.0"))
+
+OPERATING_POINTS_CONFIG = {
+    "balanced": {"threshold": 0.45, "review_band": {"low": 0.35, "high": 0.55}},
+    "high-recall": {"threshold": 0.20, "review_band": {"low": 0.15, "high": 0.30}},
+    "high_recall": {"threshold": 0.20, "review_band": {"low": 0.15, "high": 0.30}},
+    "high-precision": {"threshold": 0.90, "review_band": {"low": 0.70, "high": 0.90}},
+    "high_precision": {"threshold": 0.90, "review_band": {"low": 0.70, "high": 0.90}},
+    "default": {"threshold": 0.50, "review_band": None},
+}
 
 
 def resolve_positive_label(labels) -> str:

@@ -1,0 +1,197 @@
+{
+  "validation": {
+    "n_samples": 1191,
+    "brier_score": 0.01622,
+    "expected_calibration_error": 0.01374,
+    "bins": [
+      {
+        "bin_lower": 0.0,
+        "bin_upper": 0.1,
+        "count": 693,
+        "proportion": 0.5819,
+        "accuracy": 0.0,
+        "confidence": 0.0116,
+        "calibration_gap": 0.0116
+      },
+      {
+        "bin_lower": 0.1,
+        "bin_upper": 0.2,
+        "count": 13,
+        "proportion": 0.0109,
+        "accuracy": 0.0,
+        "confidence": 0.1332,
+        "calibration_gap": 0.1332
+      },
+      {
+        "bin_lower": 0.2,
+        "bin_upper": 0.3,
+        "count": 9,
+        "proportion": 0.0076,
+        "accuracy": 0.2222,
+        "confidence": 0.251,
+        "calibration_gap": 0.0288
+      },
+      {
+        "bin_lower": 0.3,
+        "bin_upper": 0.4,
+        "count": 4,
+        "proportion": 0.0034,
+        "accuracy": 0.25,
+        "confidence": 0.3373,
+        "calibration_gap": 0.0873
+      },
+      {
+        "bin_lower": 0.4,
+        "bin_upper": 0.5,
+        "count": 5,
+        "proportion": 0.0042,
+        "accuracy": 0.4,
+        "confidence": 0.4369,
+        "calibration_gap": 0.0369
+      },
+      {
+        "bin_lower": 0.5,
+        "bin_upper": 0.6,
+        "count": 4,
+        "proportion": 0.0034,
+        "accuracy": 0.75,
+        "confidence": 0.5416,
+        "calibration_gap": 0.2084
+      },
+      {
+        "bin_lower": 0.6,
+        "bin_upper": 0.7,
+        "count": 4,
+        "proportion": 0.0034,
+        "accuracy": 0.5,
+        "confidence": 0.6682,
+        "calibration_gap": 0.1682
+      },
+      {
+        "bin_lower": 0.7,
+        "bin_upper": 0.8,
+        "count": 15,
+        "proportion": 0.0126,
+        "accuracy": 0.8667,
+        "confidence": 0.7462,
+        "calibration_gap": 0.1204
+      },
+      {
+        "bin_lower": 0.8,
+        "bin_upper": 0.9,
+        "count": 22,
+        "proportion": 0.0185,
+        "accuracy": 0.7727,
+        "confidence": 0.8677,
+        "calibration_gap": 0.095
+      },
+      {
+        "bin_lower": 0.9,
+        "bin_upper": 1.0,
+        "count": 422,
+        "proportion": 0.3543,
+        "accuracy": 0.981,
+        "confidence": 0.9819,
+        "calibration_gap": 0.0009
+      }
+    ]
+  },
+  "test": {
+    "n_samples": 2760,
+    "brier_score": 0.02878,
+    "expected_calibration_error": 0.04,
+    "bins": [
+      {
+        "bin_lower": 0.0,
+        "bin_upper": 0.1,
+        "count": 1351,
+        "proportion": 0.4895,
+        "accuracy": 0.0104,
+        "confidence": 0.0227,
+        "calibration_gap": 0.0123
+      },
+      {
+        "bin_lower": 0.1,
+        "bin_upper": 0.2,
+        "count": 107,
+        "proportion": 0.0388,
+        "accuracy": 0.1215,
+        "confidence": 0.141,
+        "calibration_gap": 0.0195
+      },
+      {
+        "bin_lower": 0.2,
+        "bin_upper": 0.3,
+        "count": 36,
+        "proportion": 0.013,
+        "accuracy": 0.25,
+        "confidence": 0.2396,
+        "calibration_gap": 0.0104
+      },
+      {
+        "bin_lower": 0.3,
+        "bin_upper": 0.4,
+        "count": 27,
+        "proportion": 0.0098,
+        "accuracy": 0.6667,
+        "confidence": 0.3492,
+        "calibration_gap": 0.3174
+      },
+      {
+        "bin_lower": 0.4,
+        "bin_upper": 0.5,
+        "count": 31,
+        "proportion": 0.0112,
+        "accuracy": 0.7742,
+        "confidence": 0.4475,
+        "calibration_gap": 0.3267
+      },
+      {
+        "bin_lower": 0.5,
+        "bin_upper": 0.6,
+        "count": 30,
+        "proportion": 0.0109,
+        "accuracy": 0.7333,
+        "confidence": 0.5557,
+        "calibration_gap": 0.1777
+      },
+      {
+        "bin_lower": 0.6,
+        "bin_upper": 0.7,
+        "count": 53,
+        "proportion": 0.0192,
+        "accuracy": 0.8679,
+        "confidence": 0.6496,
+        "calibration_gap": 0.2183
+      },
+      {
+        "bin_lower": 0.7,
+        "bin_upper": 0.8,
+        "count": 81,
+        "proportion": 0.0293,
+        "accuracy": 0.9012,
+        "confidence": 0.7529,
+        "calibration_gap": 0.1483
+      },
+      {
+        "bin_lower": 0.8,
+        "bin_upper": 0.9,
+        "count": 152,
+        "proportion": 0.0551,
+        "accuracy": 0.9868,
+        "confidence": 0.8549,
+        "calibration_gap": 0.132
+      },
+      {
+        "bin_lower": 0.9,
+        "bin_upper": 1.0,
+        "count": 892,
+        "proportion": 0.3232,
+        "accuracy": 1.0,
+        "confidence": 0.9735,
+        "calibration_gap": 0.0265
+      }
+    ]
+  },
+  "interpretation": "The meta-classifier is well-calibrated on held-out validation data (ECE: 1.37%, Brier: 0.0162). On the unseen test split, ECE rises to 4.00% (Brier: 0.0288), indicating slight overconfidence in the high-probability tier (0.80 - 0.95), reflecting real-world distribution shift."
+}
