@@ -61,7 +61,7 @@ export function EvidenceTabs({ result }: { result: UnifiedScanResult }) {
                   <summary className="cursor-pointer text-xs text-signal-scanSoft">
                     Inspect raw HTML ({result.htmlPreview.fullLength.toLocaleString()} chars)
                   </summary>
-                  <pre className="mt-2 max-h-64 min-w-0 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-white/[0.06] bg-ink-950/60 p-3 font-mono text-[11px] text-mist-400">
+                  <pre className="mt-2 max-h-64 min-w-0 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-surface-border bg-surface-subtle p-3 font-mono text-[11px] text-mist-400">
                     {result.htmlPreview.content}
                   </pre>
                 </details>
@@ -86,7 +86,7 @@ export function EvidenceTabs({ result }: { result: UnifiedScanResult }) {
               )}
               <details className="min-w-0" open>
                 <summary className="cursor-pointer text-xs text-signal-scanSoft">Text preview</summary>
-                <pre className="mt-2 max-h-56 min-w-0 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-white/[0.06] bg-ink-950/60 p-3 font-mono text-[11px] text-mist-400">
+                <pre className="mt-2 max-h-56 min-w-0 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-surface-border bg-surface-subtle p-3 font-mono text-[11px] text-mist-400">
                   {result.textPreview.content}
                 </pre>
               </details>

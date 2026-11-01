@@ -1,10 +1,13 @@
-import { CalibrationSplitMetrics, ReliabilityBin } from "../../api/phish360";
+import { CalibrationSplitMetrics, CalibrationBin, CalibrationPayload } from "../../api/phish360";
 
 interface Props {
-  calibration: {
-    validation: CalibrationSplitMetrics;
-    test: CalibrationSplitMetrics;
-  } | null;
+  calibration:
+    | CalibrationPayload
+    | {
+        validation: CalibrationSplitMetrics;
+        test: CalibrationSplitMetrics;
+      }
+    | null;
 }
 
 export function CalibrationCurveCard({ calibration }: Props) {
@@ -16,8 +19,38 @@ export function CalibrationCurveCard({ calibration }: Props) {
     );
   }
 
-  const testCal = calibration.test;
-  const bins: ReliabilityBin[] = testCal.reliability_bins || [];
+  // Safely extract the test split or root calibration object
+  const testCal: Partial<CalibrationSplitMetrics> | null =
+    "test" in calibration && calibration.test
+      ? calibration.test
+      : (calibration as Partial<CalibrationSplitMetrics>);
+
+  if (!testCal) {
+    return (
+      <div className="border border-surface-border bg-surface-card rounded-lg p-5 font-mono text-xs text-mist-500">
+        Calibration test split unavailable.
+      </div>
+    );
+  }
+
+  const rawBins: CalibrationBin[] = testCal.bins || testCal.reliability_bins || [];
+  const bins = rawBins.map((b: any) => ({
+    count: b.count ?? 0,
+    mean_predicted: b.confidence ?? b.mean_predicted ?? 0,
+    observed_fraction: b.accuracy ?? b.observed_fraction ?? 0,
+    bin_lower: b.bin_lower ?? 0,
+    bin_upper: b.bin_upper ?? 0,
+  }));
+
+  const brierScore =
+    testCal.brier_score != null && !isNaN(Number(testCal.brier_score))
+      ? Number(testCal.brier_score).toFixed(4)
+      : "unavailable";
+
+  const ece =
+    testCal.expected_calibration_error != null && !isNaN(Number(testCal.expected_calibration_error))
+      ? Number(testCal.expected_calibration_error).toFixed(4)
+      : "unavailable";
 
   return (
     <div className="border border-surface-border bg-surface-card rounded-lg p-5 font-sans space-y-4">
@@ -36,11 +69,11 @@ export function CalibrationCurveCard({ calibration }: Props) {
         <div className="flex items-center gap-3 font-mono text-xs">
           <div className="border border-surface-border bg-surface-subtle px-2.5 py-1 rounded">
             <span className="text-mist-500 text-[10px] uppercase mr-1.5">Brier Score:</span>
-            <span className="text-mist-100 font-semibold tabular">{testCal.brier_score.toFixed(4)}</span>
+            <span className="text-mist-100 font-semibold tabular">{brierScore}</span>
           </div>
           <div className="border border-surface-border bg-surface-subtle px-2.5 py-1 rounded">
             <span className="text-mist-500 text-[10px] uppercase mr-1.5">ECE:</span>
-            <span className="text-mist-100 font-semibold tabular">{testCal.expected_calibration_error.toFixed(4)}</span>
+            <span className="text-mist-100 font-semibold tabular">{ece}</span>
           </div>
         </div>
       </div>

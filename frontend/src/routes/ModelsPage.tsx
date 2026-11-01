@@ -97,12 +97,7 @@ export default function ModelsPage() {
 
       {/* 3. Decile Reliability Calibration Curve */}
       <CalibrationCurveCard
-        calibration={
-          threshData?.calibration ||
-          (modelData.calibration
-            ? { validation: modelData.calibration as any, test: modelData.calibration as any }
-            : null)
-        }
+        calibration={threshData?.calibration ?? modelData.calibration ?? null}
       />
 
       {/* 4. Global Feature Importance (URL and DOM TreeSHAP Gini) */}

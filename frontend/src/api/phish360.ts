@@ -165,45 +165,60 @@ export interface ThresholdTableRow {
   recall: number;
   fpr: number;
   f1: number;
+  accuracy: number;
   tp: number;
   fp: number;
   tn: number;
   fn: number;
-  total: number;
 }
 
-export interface ReliabilityBin {
-  bin_index: number;
-  bin_center: number;
+export interface CalibrationBin {
+  bin_lower: number;
+  bin_upper: number;
   count: number;
-  mean_predicted: number;
-  observed_fraction: number;
+  proportion: number;
+  accuracy: number;
+  confidence: number;
+  calibration_gap: number;
 }
 
 export interface CalibrationSplitMetrics {
-  brier_score: number;
-  expected_calibration_error: number;
-  reliability_bins: ReliabilityBin[];
+  n_samples?: number;
+  brier_score?: number | null;
+  expected_calibration_error?: number | null;
+  bins?: CalibrationBin[];
+  reliability_bins?: CalibrationBin[];
+}
+
+export interface CalibrationPayload {
+  validation?: CalibrationSplitMetrics;
+  test?: CalibrationSplitMetrics;
+  interpretation?: string;
+  brier_score?: number | null;
+  expected_calibration_error?: number | null;
+  reliability_bins?: CalibrationBin[];
+  bins?: CalibrationBin[];
+}
+
+export interface CurvePoint {
+  x: number;
+  y: number;
+  threshold: number;
 }
 
 export interface ThresholdAnalysisResponse {
-  threshold_step: number;
-  default_threshold: number;
+  threshold_step?: number;
+  default_threshold?: number;
   operating_points: Record<string, OperatingPointConfig>;
-  validation_table: ThresholdTableRow[];
-  test_table: ThresholdTableRow[];
-  pr_curve: {
-    validation: { threshold: number; precision: number; recall: number }[];
-    test: { threshold: number; precision: number; recall: number }[];
+  validation_threshold_table: ThresholdTableRow[];
+  test_threshold_table: ThresholdTableRow[];
+  curves: {
+    validation_pr: CurvePoint[];
+    validation_roc: CurvePoint[];
+    test_pr: CurvePoint[];
+    test_roc: CurvePoint[];
   };
-  roc_curve: {
-    validation: { threshold: number; fpr: number; tpr: number }[];
-    test: { threshold: number; fpr: number; tpr: number }[];
-  };
-  calibration: {
-    validation: CalibrationSplitMetrics;
-    test: CalibrationSplitMetrics;
-  };
+  calibration: CalibrationPayload;
 }
 
 // --- Domain Shift (Phase A3) ---------------------------------------------
@@ -410,11 +425,7 @@ export interface ModelInfoResponse {
   fusion_logreg_intercept: number | null;
   threshold: number;
   operating_points: Record<string, OperatingPointConfig> | null;
-  calibration: {
-    brier_score: number;
-    expected_calibration_error: number;
-    reliability_bins: ReliabilityBin[];
-  } | null;
+  calibration: CalibrationPayload | null;
   global_feature_importance: GlobalFeatureImportance | null;
   domain_shift: DomainShiftResponse | null;
 }

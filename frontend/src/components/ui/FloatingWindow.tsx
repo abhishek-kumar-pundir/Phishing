@@ -85,8 +85,8 @@ export function FloatingWindow({ open, onClose, title, subtitle, headerExtra, ch
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="absolute inset-0 backdrop-blur-[2px]"
-            style={{ backgroundColor: "rgba(3,7,18,0.55)" }}
+            className="absolute inset-0"
+            style={{ backgroundColor: "rgba(9,10,12,0.75)" }}
           />
 
           {isMobile ? (
@@ -100,7 +100,7 @@ export function FloatingWindow({ open, onClose, title, subtitle, headerExtra, ch
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={reducedMotion ? { duration: 0.01 } : { type: "spring", damping: 32, stiffness: 320 }}
-              className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-ink-900 shadow-2xl outline-none"
+              className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col overflow-hidden rounded-t-lg border border-surface-border bg-surface-card outline-none"
             >
               <Header title={title} subtitle={subtitle} onClose={onClose} handleProps={{}} showGrip headerExtra={headerExtra} />
               <div className="min-w-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-1">{children}</div>
@@ -121,7 +121,7 @@ export function FloatingWindow({ open, onClose, title, subtitle, headerExtra, ch
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 20, scale: 0.97 }}
               transition={reducedMotion ? { duration: 0.01 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute right-[5vw] top-[7vh] flex max-h-[82vh] flex-col overflow-hidden rounded-2xl border border-white/10 bg-ink-900/95 shadow-2xl outline-none backdrop-blur-xl"
+              className="absolute right-[5vw] top-[7vh] flex max-h-[82vh] flex-col overflow-hidden rounded-lg border border-surface-border bg-surface-card outline-none"
               style={{ width, maxWidth: "90vw" }}
             >
               <Header
@@ -158,7 +158,7 @@ function Header({
   return (
     <div
       {...handleProps}
-      className={`sticky top-0 z-10 border-b border-white/[0.08] bg-ink-900/95 px-5 pb-4 pt-4 backdrop-blur-xl ${
+      className={`sticky top-0 z-10 border-b border-surface-border bg-surface-card px-5 pb-4 pt-4 ${
         !showGrip ? "cursor-grab active:cursor-grabbing" : ""
       }`}
     >

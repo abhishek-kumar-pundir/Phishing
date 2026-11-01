@@ -97,3 +97,4 @@ export function GlobalFeatureImportanceCard({ importance }: Props) {
     </div>
   );
 }
+

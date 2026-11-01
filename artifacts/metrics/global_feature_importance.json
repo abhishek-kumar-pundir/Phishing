@@ -1,0 +1,176 @@
+{
+  "url": [
+    {
+      "feature": "num_www",
+      "importance": 0.1655
+    },
+    {
+      "feature": "path_length",
+      "importance": 0.1203
+    },
+    {
+      "feature": "url_entropy",
+      "importance": 0.1056
+    },
+    {
+      "feature": "url_length",
+      "importance": 0.1051
+    },
+    {
+      "feature": "num_slashes",
+      "importance": 0.0825
+    },
+    {
+      "feature": "host_entropy",
+      "importance": 0.0717
+    },
+    {
+      "feature": "host_length",
+      "importance": 0.0516
+    },
+    {
+      "feature": "num_dots",
+      "importance": 0.0478
+    },
+    {
+      "feature": "digit_ratio",
+      "importance": 0.0476
+    },
+    {
+      "feature": "num_digits",
+      "importance": 0.0446
+    },
+    {
+      "feature": "num_hyphens",
+      "importance": 0.0407
+    },
+    {
+      "feature": "suspicious_keyword_count",
+      "importance": 0.039
+    },
+    {
+      "feature": "num_subdomains",
+      "importance": 0.0301
+    },
+    {
+      "feature": "has_https",
+      "importance": 0.0156
+    },
+    {
+      "feature": "num_underscores",
+      "importance": 0.0074
+    },
+    {
+      "feature": "num_equals",
+      "importance": 0.0064
+    },
+    {
+      "feature": "has_suspicious_tld",
+      "importance": 0.0064
+    },
+    {
+      "feature": "num_question_marks",
+      "importance": 0.0048
+    },
+    {
+      "feature": "num_ampersands",
+      "importance": 0.003
+    },
+    {
+      "feature": "num_percent",
+      "importance": 0.002
+    },
+    {
+      "feature": "num_at_symbols",
+      "importance": 0.0013
+    },
+    {
+      "feature": "has_ip_host",
+      "importance": 0.0006
+    },
+    {
+      "feature": "has_port",
+      "importance": 0.0004
+    },
+    {
+      "feature": "double_slash_in_path",
+      "importance": 0.0002
+    }
+  ],
+  "html": [
+    {
+      "feature": "num_links",
+      "importance": 0.22
+    },
+    {
+      "feature": "visible_text_length",
+      "importance": 0.1669
+    },
+    {
+      "feature": "num_images",
+      "importance": 0.1052
+    },
+    {
+      "feature": "external_link_ratio",
+      "importance": 0.0981
+    },
+    {
+      "feature": "num_password_inputs",
+      "importance": 0.0763
+    },
+    {
+      "feature": "num_scripts",
+      "importance": 0.056
+    },
+    {
+      "feature": "text_to_html_ratio",
+      "importance": 0.0537
+    },
+    {
+      "feature": "num_inputs_total",
+      "importance": 0.0473
+    },
+    {
+      "feature": "html_length",
+      "importance": 0.0446
+    },
+    {
+      "feature": "title_length",
+      "importance": 0.0361
+    },
+    {
+      "feature": "external_script_ratio",
+      "importance": 0.0299
+    },
+    {
+      "feature": "num_forms",
+      "importance": 0.0219
+    },
+    {
+      "feature": "num_iframes",
+      "importance": 0.0175
+    },
+    {
+      "feature": "num_hidden_inputs",
+      "importance": 0.0154
+    },
+    {
+      "feature": "num_external_form_actions",
+      "importance": 0.0081
+    },
+    {
+      "feature": "has_meta_refresh",
+      "importance": 0.0017
+    },
+    {
+      "feature": "has_title",
+      "importance": 0.0013
+    },
+    {
+      "feature": "has_favicon",
+      "importance": 0.0
+    }
+  ],
+  "method": "mean_decrease_in_impurity",
+  "description": "Global Gini feature importance across the 300 trees of the Random Forest classifiers."
+}

@@ -10,11 +10,20 @@ interface Props {
 }
 
 export function ThresholdSliderCard({ data }: Props) {
-  const [threshold, setThreshold] = useState<number>(data.default_threshold ?? 0.45);
+  const operatingPoints = data.operating_points || {};
+  const defaultThresh =
+    data.default_threshold ??
+    operatingPoints.default?.threshold ??
+    0.50;
 
-  const testRows = data.test_table || [];
+  const [threshold, setThreshold] = useState<number>(defaultThresh);
 
-  // Find the closest row in test_table
+  const testRows: ThresholdTableRow[] =
+    data.test_threshold_table ||
+    (data as any).test_table ||
+    [];
+
+  // Find the closest row in test threshold table
   const activeRow: ThresholdTableRow = useMemo(() => {
     if (!testRows.length) {
       return {
@@ -23,11 +32,11 @@ export function ThresholdSliderCard({ data }: Props) {
         recall: 0.96,
         fpr: 0.04,
         f1: 0.96,
-        tp: 288,
-        fp: 12,
-        tn: 288,
-        fn: 12,
-        total: 600,
+        accuracy: 0.96,
+        tp: 1255,
+        fp: 50,
+        tn: 1150,
+        fn: 50,
       };
     }
     let closest = testRows[0];
@@ -42,7 +51,17 @@ export function ThresholdSliderCard({ data }: Props) {
     return closest;
   }, [testRows, threshold]);
 
-  const operatingPoints = data.operating_points || {};
+  const prPoints = (data.curves?.test_pr || (data as any).pr_curve?.test || []).map((pt: any) => ({
+    recall: pt.recall ?? pt.x ?? 0,
+    precision: pt.precision ?? pt.y ?? 0,
+    threshold: pt.threshold ?? 0,
+  }));
+
+  const rocPoints = (data.curves?.test_roc || (data as any).roc_curve?.test || []).map((pt: any) => ({
+    fpr: pt.fpr ?? pt.x ?? 0,
+    tpr: pt.tpr ?? pt.y ?? 0,
+    threshold: pt.threshold ?? 0,
+  }));
 
   return (
     <div className="border border-surface-border bg-surface-card rounded-lg p-5 font-sans space-y-5">
@@ -53,7 +72,7 @@ export function ThresholdSliderCard({ data }: Props) {
             Interactive Threshold Operating Points
           </h3>
           <p className="text-[11px] text-mist-400 mt-0.5">
-            Evaluate precision, recall, and false positive trade-offs across 600 test samples.
+            Evaluate precision, recall, and false positive trade-offs across 2,760 test samples.
           </p>
         </div>
 
@@ -91,7 +110,7 @@ export function ThresholdSliderCard({ data }: Props) {
               {threshold.toFixed(2)}
             </span>
             <span className="text-[10px] text-mist-500">
-              (default: {data.default_threshold.toFixed(2)})
+              (default: {typeof defaultThresh === "number" ? defaultThresh.toFixed(2) : "0.50"})
             </span>
           </div>
         </div>
@@ -118,7 +137,7 @@ export function ThresholdSliderCard({ data }: Props) {
         <div className="border border-surface-border bg-surface-subtle/50 rounded p-3">
           <span className="font-mono text-[10px] text-mist-500 uppercase block">Precision</span>
           <span className="font-mono text-lg font-semibold text-mist-100 tabular block mt-0.5">
-            {(activeRow.precision * 100).toFixed(1)}%
+            {activeRow.precision != null ? `${(activeRow.precision * 100).toFixed(1)}%` : "unavailable"}
           </span>
           <span className="font-mono text-[10px] text-mist-500 tabular">
             FP: {activeRow.fp} / {activeRow.fp + activeRow.tn}
@@ -128,7 +147,7 @@ export function ThresholdSliderCard({ data }: Props) {
         <div className="border border-surface-border bg-surface-subtle/50 rounded p-3">
           <span className="font-mono text-[10px] text-mist-500 uppercase block">Recall (Catch Rate)</span>
           <span className="font-mono text-lg font-semibold text-mist-100 tabular block mt-0.5">
-            {(activeRow.recall * 100).toFixed(1)}%
+            {activeRow.recall != null ? `${(activeRow.recall * 100).toFixed(1)}%` : "unavailable"}
           </span>
           <span className="font-mono text-[10px] text-mist-500 tabular">
             TP: {activeRow.tp} / {activeRow.tp + activeRow.fn}
@@ -138,7 +157,7 @@ export function ThresholdSliderCard({ data }: Props) {
         <div className="border border-surface-border bg-surface-subtle/50 rounded p-3">
           <span className="font-mono text-[10px] text-mist-500 uppercase block">False Positive Rate</span>
           <span className="font-mono text-lg font-semibold text-mist-100 tabular block mt-0.5">
-            {(activeRow.fpr * 100).toFixed(2)}%
+            {activeRow.fpr != null ? `${(activeRow.fpr * 100).toFixed(2)}%` : "unavailable"}
           </span>
           <span className="font-mono text-[10px] text-mist-500 tabular">
             Clean sites blocked
@@ -148,7 +167,7 @@ export function ThresholdSliderCard({ data }: Props) {
         <div className="border border-surface-border bg-surface-subtle/50 rounded p-3">
           <span className="font-mono text-[10px] text-mist-500 uppercase block">F1 Score</span>
           <span className="font-mono text-lg font-semibold text-mist-100 tabular block mt-0.5">
-            {activeRow.f1.toFixed(3)}
+            {activeRow.f1 != null ? activeRow.f1.toFixed(3) : "unavailable"}
           </span>
           <span className="font-mono text-[10px] text-mist-500 tabular">
             Harmonic mean
@@ -184,9 +203,9 @@ export function ThresholdSliderCard({ data }: Props) {
             <text x="270" y="154" textAnchor="middle" fill="#525866" fontSize="8" fontFamily="Geist Mono">1.0</text>
 
             {/* PR Path */}
-            {data.pr_curve?.test?.length > 0 && (
+            {prPoints.length > 0 && (
               <path
-                d={data.pr_curve.test
+                d={prPoints
                   .map((pt, i) => {
                     const x = 30 + pt.recall * 240;
                     const y = 140 - pt.precision * 120;
@@ -242,9 +261,9 @@ export function ThresholdSliderCard({ data }: Props) {
             <text x="270" y="154" textAnchor="middle" fill="#525866" fontSize="8" fontFamily="Geist Mono">1.0</text>
 
             {/* ROC Path */}
-            {data.roc_curve?.test?.length > 0 && (
+            {rocPoints.length > 0 && (
               <path
-                d={data.roc_curve.test
+                d={rocPoints
                   .map((pt, i) => {
                     const x = 30 + pt.fpr * 240;
                     const y = 140 - pt.tpr * 120;

@@ -197,7 +197,7 @@ export function ModalityNode({
           distanceFactor={7}
           zIndexRange={[50, 10]}
         >
-          <div className="pointer-events-none border border-surface-border bg-surface-card/95 px-3 py-2 rounded shadow-lg font-mono text-[10px] space-y-0.5 text-mist-200 whitespace-nowrap">
+          <div className="pointer-events-none border border-surface-border bg-surface-card px-3 py-2 rounded font-mono text-[10px] space-y-0.5 text-mist-200 whitespace-nowrap">
             <div className="text-brand font-semibold uppercase">{label} Modality</div>
             <div className="text-mist-400">
               Weight: <span className="text-mist-100">{weight.toFixed(2)} ({weightPercent}%)</span>

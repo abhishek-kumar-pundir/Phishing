@@ -8,7 +8,7 @@ export function MobileNav() {
   const { pathname } = useLocation();
 
   return (
-    <div className="sticky top-0 z-40 border-b border-surface-border bg-surface-canvas/95 backdrop-blur lg:hidden">
+    <div className="sticky top-0 z-40 border-b border-surface-border bg-surface-canvas lg:hidden">
       <div className="flex items-center justify-between px-4 py-3">
         <Link to="/scan" className="flex items-center gap-2">
           <LogoMark size={18} className="text-brand" />
@@ -34,7 +34,7 @@ export function MobileNav() {
                 onClick={() => setOpen(false)}
                 className={`block px-3 py-2 text-xs rounded ${
                   pathname.startsWith(item.to)
-                    ? "bg-brand-soft text-brand font-medium"
+                    ? "bg-brand/10 text-brand font-medium"
                     : "text-mist-400 hover:text-mist-200"
                 }`}
               >
@@ -52,7 +52,7 @@ export function MobileNav() {
                 onClick={() => setOpen(false)}
                 className={`block px-3 py-2 text-xs rounded ${
                   pathname === sub.to
-                    ? "bg-brand-soft text-brand font-medium"
+                    ? "bg-brand/10 text-brand font-medium"
                     : "text-mist-400 hover:text-mist-200"
                 }`}
               >

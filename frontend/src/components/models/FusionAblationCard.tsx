@@ -135,3 +135,4 @@ export function FusionAblationCard({ ablation, coefficients, intercept }: Props)
     </div>
   );
 }
+

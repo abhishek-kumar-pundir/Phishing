@@ -1,0 +1,6 @@
+config,modalities,test_accuracy,test_precision,test_recall,test_f1,test_roc_auc
+full,url+html+text+vision,0.9627,0.9793,0.9381,0.9583,0.9949
+minus_url,html+text+vision,0.9478,0.9794,0.9048,0.9406,0.9933
+minus_html,url+text+vision,0.9518,0.9747,0.9183,0.9457,0.9888
+minus_text,url+html+vision,0.962,0.9602,0.9564,0.9583,0.9929
+minus_vision,url+html+text,0.9623,0.9817,0.935,0.9578,0.9942

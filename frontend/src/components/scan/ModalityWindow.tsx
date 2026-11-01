@@ -51,7 +51,7 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 function RawBlock({ content }: { content: string }) {
   return (
-    <pre className="max-h-56 min-w-0 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-white/[0.06] bg-ink-950/60 p-3 font-mono text-[11.5px] leading-relaxed text-mist-400">
+    <pre className="max-h-56 min-w-0 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-surface-border bg-surface-subtle p-3 font-mono text-[11.5px] leading-relaxed text-mist-400">
       {content}
     </pre>
   );
@@ -164,7 +164,7 @@ export function ModalityWindow({
 
       {lightbox && modality === "vision" && result.screenshotUrl && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink-950/85 p-6 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-surface-canvas/90 p-6"
           onClick={() => setLightbox(false)}
         >
           <img
