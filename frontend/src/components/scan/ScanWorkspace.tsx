@@ -5,7 +5,7 @@ import { StepId, StepStatus } from "../../hooks/usePipelineScan";
 import { UnifiedScanResult } from "../../lib/scanResult";
 import { domainOf, durationLabel, pct } from "../../lib/format";
 import { FusionScene3D } from "./fusion3d/FusionScene3D";
-import { DockedInspector } from "./DockedInspector";
+import { ModalityCardsGrid } from "./ModalityCardsGrid";
 import { VerdictPanel } from "./VerdictPanel";
 import { PipelineStages } from "./PipelineStages";
 import { ReplayScrubber, REPLAY_STEPS } from "./ReplayScrubber";
@@ -159,7 +159,7 @@ export function ScanWorkspace({
           )}
         </div>
 
-        {/* Right Column: Timeline + Verdict + Docked Inspector (~42%) */}
+        {/* Right Column: Timeline + Verdict Panel (~42%) */}
         <div className="lg:col-span-5 space-y-4 min-w-0">
           {/* Stage Execution Timeline */}
           <PipelineStages
@@ -177,15 +177,15 @@ export function ScanWorkspace({
           {effectiveResult.fusion.probability != null && (
             <VerdictPanel result={effectiveResult} />
           )}
-
-          {/* Docked Inspector (TreeSHAP Diverging Bars / N-Grams / Screenshot) */}
-          <DockedInspector
-            result={effectiveResult}
-            selectedModality={selectedModality}
-            onSelectModality={(m) => setSelectedModality(m)}
-          />
         </div>
       </div>
+
+      {/* 4 Different Boxes: 2 Rows & 2 Columns (URL, DOM, Text, Vision) */}
+      <ModalityCardsGrid
+        result={effectiveResult}
+        selectedModality={selectedModality}
+        onSelectModality={(m) => setSelectedModality(m)}
+      />
     </div>
   );
 }
