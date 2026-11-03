@@ -1,0 +1,51 @@
+:root {
+  /* Strict Palette */
+  --c-ink: #14130F;
+  --c-graphite: #2A2926;
+  --c-bone: #E8E2D4;
+  --c-stone: #8F897A;
+  --c-oxide: #8C3F32; /* Fake / malicious / danger only */
+  --c-moss: #55705A;  /* Legitimate / authentic only */
+  --c-slate: #4A5C70; /* Technical data accent */
+  --c-brass: #A88B50; /* Rare highlight & key milestones */
+
+  /* Surface variants */
+  --c-ink-soft: #1C1B17;
+  --c-bone-dim: #DDD5C4;
+  --c-graphite-border: #3A3834;
+  --c-stone-hairline: rgba(143, 137, 122, 0.35);
+
+  /* Typography */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, monospace;
+
+  /* Sizing scale - 1920x1080 primary, 1366x768 friendly */
+  --text-micro: clamp(12px, 0.85vw, 15px);
+  --text-label: clamp(14px, 1.0vw, 18px);
+  --text-meta: clamp(16px, 1.15vw, 20px);
+  --text-body: clamp(20px, 1.55vw, 28px);   /* At least 28px at 1080p */
+  --text-lead: clamp(26px, 2.1vw, 36px);
+  --text-h2: clamp(40px, 3.8vw, 68px);
+  --text-h1: clamp(64px, 6.2vw, 110px);
+  --text-colossal: clamp(110px, 12vw, 220px); /* Numbers 160-280px */
+
+  /* Hairlines and strokes - minimum 2px for projector viability */
+  --stroke-rule: 2px;
+  --stroke-hairline: 1.5px;
+  --stroke-accent: 3px;
+
+  /* Transitions & Timing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-circ: cubic-bezier(0.85, 0, 0.15, 1);
+  --duration-scene: 0.85s;
+  --duration-step: 0.5s;
+}
+
+/* Projector High-Contrast Mode */
+body.projector-mode {
+  --stroke-hairline: 2.5px;
+  --stroke-rule: 3px;
+  --c-stone: #A39D8E;
+  --c-graphite-border: #4D4A45;
+}

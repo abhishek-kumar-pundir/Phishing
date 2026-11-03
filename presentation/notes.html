@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phish360 Defense · Speaker Notes Window</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #14130F;
+      color: #E8E2D4;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+    }
+    header {
+      border-bottom: 2px solid #A88B50;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .badge {
+      font-family: monospace;
+      font-size: 13px;
+      color: #A88B50;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .title {
+      font-size: 22px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .timer {
+      font-family: monospace;
+      font-size: 20px;
+      color: #A88B50;
+    }
+    .script-box {
+      background: #1C1B17;
+      border-left: 3px solid #8F897A;
+      padding: 18px;
+      font-size: 20px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      border-radius: 2px;
+    }
+    .viva-box {
+      background: rgba(168, 139, 80, 0.08);
+      border: 1px solid rgba(168, 139, 80, 0.3);
+      padding: 18px;
+      border-radius: 4px;
+    }
+    .viva-label {
+      font-family: monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #A88B50;
+      margin-bottom: 6px;
+    }
+    .viva-q {
+      font-size: 17px;
+      font-weight: 600;
+      color: #E8E2D4;
+      margin-bottom: 14px;
+    }
+    .viva-a {
+      font-size: 16px;
+      color: #DDD5C4;
+      line-height: 1.5;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #2A2926;
+    }
+    button {
+      padding: 10px 18px;
+      background: #2A2926;
+      color: #E8E2D4;
+      border: 1px solid #8F897A;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #A88B50;
+      color: #14130F;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <span class="badge" id="notes-badge">SCENE 01 · STEP 1/2</span>
+      <div class="title" id="notes-title">Loading...</div>
+    </div>
+    <div class="timer" id="notes-timer">00:00</div>
+  </header>
+
+  <div style="font-family: monospace; font-size: 12px; color: #A88B50; text-transform: uppercase; margin-bottom: 8px;">
+    Defense Delivery Script (~40 seconds)
+  </div>
+  <div class="script-box" id="notes-script">
+    Awaiting presentation synchronization...
+  </div>
+
+  <div class="viva-box">
+    <div class="viva-label">Expected Viva Defense Question</div>
+    <div class="viva-q" id="viva-q">—</div>
+    <div class="viva-label">Model-Factual Answer</div>
+    <div class="viva-a" id="viva-a">—</div>
+  </div>
+
+  <div class="controls">
+    <button id="btn-prev">← PREVIOUS STEP</button>
+    <button id="btn-next">NEXT STEP →</button>
+    <button id="btn-blank">TOGGLE BLACKOUT</button>
+  </div>
+
+  <script type="module">
+    let channel;
+    try {
+      channel = new BroadcastChannel("phish360_presentation_sync");
+      channel.onmessage = (event) => {
+        if (event.data?.type === "STATE_SYNC") {
+          render(event.data.state, event.data.currentScene);
+        }
+      };
+    } catch (e) {
+      console.warn("BroadcastChannel error:", e);
+    }
+
+    function render(state, scene) {
+      if (!scene) return;
+      document.getElementById("notes-badge").textContent = `SCENE ${String(scene.index).padStart(2, '0')} · STEP ${state.step + 1}/${scene.substepsCount}`;
+      document.getElementById("notes-title").textContent = scene.title;
+      document.getElementById("notes-script").textContent = scene.script;
+      document.getElementById("viva-q").textContent = `Q: ${scene.vivaQuestion}`;
+      document.getElementById("viva-a").textContent = scene.vivaAnswer;
+
+      const mins = String(Math.floor(state.elapsedSeconds / 60)).padStart(2, '0');
+      const secs = String(state.elapsedSeconds % 60).padStart(2, '0');
+      document.getElementById("notes-timer").textContent = `${mins}:${secs}`;
+    }
+
+    document.getElementById("btn-prev").addEventListener("click", () => {
+      channel?.postMessage({ type: "REMOTE_NAV", delta: -1 });
+    });
+    document.getElementById("btn-next").addEventListener("click", () => {
+      channel?.postMessage({ type: "REMOTE_NAV", delta: 1 });
+    });
+    document.getElementById("btn-blank").addEventListener("click", () => {
+      channel?.postMessage({ type: "TOGGLE_BLACKOUT" });
+    });
+  </script>
+</body>
+</html>
