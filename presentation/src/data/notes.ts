@@ -349,3 +349,4 @@ export const SCENES_DATA: SceneMetadata[] = [
       "That no single feature modality is resilient against dedicated adversaries. High-performing security AI requires structural orthogonality across independent data channels combined with calibrated probability meta-ensembles.",
   },
 ];
+

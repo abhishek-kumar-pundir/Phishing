@@ -79,3 +79,4 @@ export function openPopoutNotesWindow() {
     `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
   );
 }
+

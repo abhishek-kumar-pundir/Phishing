@@ -8,3 +8,5 @@ export interface SceneInstance {
   leave?: () => void;
   destroy?: () => void;
 }
+
+export type SceneComponent = SceneInstance;

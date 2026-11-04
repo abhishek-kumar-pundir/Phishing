@@ -41,3 +41,4 @@ export function createPlaceholderScene(index: number): SceneInstance {
     element: el,
   };
 }
+
